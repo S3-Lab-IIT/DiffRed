@@ -111,7 +111,7 @@ class DiffRed():
 
 
 
-    def fit_transform(self,A,max_iter):
+    def fit_transform(self,A,max_iter=100):
         self.n, self.D= A.shape
         self.flag=get_flag(A)
         # A,self.scaler=data_scaler(A)
