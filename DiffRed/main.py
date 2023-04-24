@@ -48,7 +48,6 @@ class DiffRed():
             X=Uk1*self.sigma[:self.k1]
             return X
         else:
-            print(self.U[:,0:self.k1].shape)
             X=A@self.U[:,0:self.k1]
             return X
     
@@ -66,7 +65,7 @@ class DiffRed():
         second_term=self.Ar@R
         return scale*second_term,scale,R
     
-    def monte_carlo_search(self,A,max_iter=100,sample=100):
+    def monte_carlo_search(self,max_iter=100,sample=100):
         minimum=100000
         min_Y=None
         min_scale=None
@@ -91,7 +90,26 @@ class DiffRed():
                     min_Y=Y
                     min_R=R
                     min_scale=scale
-        return minimum, min_Y, min_R, min_scale,
+        return minimum, min_Y, min_R, min_scale
+
+
+    def fit(self,A):
+        self.n,self.D=A.shape
+        self.flag=get_flag(A)
+        self.U, self.sigma=self.calculate_u_sigma(A)
+        self.Ak1=self.get_Ak(A)
+        self.Ar=A-self.Ak1
+    
+    def transform(self,A,max_iter=100,sample=100):
+        self.trans_X=self.get_X(A)
+        self.trans_Ak1=self.get_Ak(A)
+        self.trans_Ar=A-self.trans_Ak1
+        self.metric,self.opt_Y,self.opt_R,self.opt_scale=self.monte_carlo_search(max_iter,sample)
+        self.trans_Y=self.opt_scale*(self.trans_Ar@self.opt_R)
+        self.trans_embed=np.concatenate((self.trans_X,self.trans_Y),axis=1)
+        return self.trans_embed
+
+
 
     def fit_transform(self,A,max_iter):
         self.n, self.D= A.shape
@@ -101,7 +119,7 @@ class DiffRed():
         self.Ak1=self.get_Ak(A)
         self.X=self.get_X(A)
         self.Ar=A-self.Ak1
-        self.metric,self.opt_Y,self.opt_R,self.opt_scale=self.monte_carlo_search(A,max_iter)
+        self.metric,self.opt_Y,self.opt_R,self.opt_scale=self.monte_carlo_search(max_iter)
         self.embeddings=np.concatenate((self.X,self.opt_Y),axis=1)
         return self.embeddings
 
