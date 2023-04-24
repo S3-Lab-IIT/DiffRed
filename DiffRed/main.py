@@ -1,4 +1,4 @@
-from .utils import data_scaler, get_flag,approx_stress
+from .utils import data_scaler, get_flag,approx_stress,stress,m1
 import math as m
 import numpy as np
 import sklearn.preprocessing as skp
@@ -10,112 +10,103 @@ class DiffRed():
         self.k1=k1
         self.k2=k2
         self.opt_metric=opt_metric
+    
+    # def calculate_u_sigma(self, A):
+    #     if self.flag==0:
+    #         aaT=A@A.T
+    #     else:
+    #         aaT=A.T@A
+    #     eigv,eigvec=LA.eigh(aaT)
+    #     for i in range(eigv.shape[0]):
+    #         if eigv[i]<0.0:
+    #             eigv[i]=0
+    #             eigvec[:,i]=0
+    #     eigv=eigv[::-1]
+    #     eigvec=eigvec[:,::-1]
+    #     sigma=np.sqrt(eigv)
+    #     return eigvec, sigma
     def calculate_u_sigma(self,A):
-        n,D=A.shape
-        if self.flag:
-            aaT=A.T@A
-        else:
+    # Calculates U matrix and Sigma Vector
+        if self.flag==0:
             aaT=A@A.T
-        eigv,eigvec=np.linalg.eigh(aaT)
+        else:
+            aaT=A.T@A
+        eigv,eigvec=LA.eigh(aaT)
         for i in range(eigv.shape[0]):
+            #print(eigv[i])
             if eigv[i]<0.0:
                 eigv[i]=0
                 eigvec[:,i]=0
-            eigv=eigv[::-1]
-            eigvec=eigvec[:,::-1]
-            sigma=np.sqrt(eigv)
-            return eigvec,sigma
-    def get_Ak(self,A):
-        if self.flag:
-            Ak=LA.multi_dot([A,self.U[:,0:self.k1],self.U[:,0:self.k1].T])
-            return Ak
-        else:
-            Ak=LA.multi_dot([self.U[:,0:self.k1],self.U[:,0:self.k1].T,A])
-            return Ak
+        #need to check this code
+        eigv=eigv[::-1] #eigh returns eigenvalues in ascending order so we need to reverse the order to have descending order 
+        eigvec=eigvec[:,::-1] #we need to reverse the eigenvectors(columns of eigvec) as well
+        sigma=np.sqrt(eigv) #take square root for singular values
+        return eigvec,sigma 
     def get_X(self,A):
-        if self.flag:
+        if self.flag==0:
+            Uk1=self.U[:,:self.k1]
+            X=Uk1*self.sigma[:self.k1]
+            return X
+        else:
+            print(self.U[:,0:self.k1].shape)
             X=A@self.U[:,0:self.k1]
             return X
+    
+    def get_Ak(self,A):
+        if self.flag==0:
+            Ak=LA.multi_dot([self.U[:,0:self.k1],self.U[:,0:self.k1].T,A])
+            return Ak
         else:
-            X=self.U[:,:self.k1]*self.sigma[:self.k1]
-            return X
-    def fit(self,A):
-        self.n, self.D=A.shape
-        self.flag=get_flag(A)
-        A,self.scaler=data_scaler(A)
-        self.U,self.sigma= self.calculate_u_sigma(A)
-        self.Ak1=self.get_Ak(A)
-        self.Ar=A-self.Ak1
-
-    # def get_R(self):
-    #     scale=m.sqrt(self.D/self.k2)
-    #     R=np.random.normal(size=(self.D,self.k2),scale=m.sqrt(1/self.D))
-    #     return scale,R
-
+            Ak=LA.multi_dot([A,self.U[:,0:self.k1],self.U[:,0:self.k1].T])
+            return Ak
+    
     def get_Y(self):
         scale=m.sqrt(self.D/self.k2)
         R=np.random.normal(size=(self.D,self.k2),scale=m.sqrt(1/self.D))
-        Y=scale*(self.Ar@R)
-        return Y,scale,R
-
-
-    def monte_carlo_search(self,sample,max_iter):
-        self.max_iter=max_iter
-        self.sample=sample
-        if self.opt_metric.lower()=='stress':
-            minimum=float('inf')
-            min_Y=None
-            min_scale=None
-            min_R=None
-            stress=0
-            for i in range(self.max_iter):
-                Y,scale,R=self.get_Y()
-                stress=approx_stress(self.Ar,Y,self.sample)
-                if stress<minimum:
-                    minimum=stress
-                    min_Y=Y
-                    min_scale=scale
-                    min_R=R
-            self.stress=minimum 
-            self.opt_Y=min_Y
-            self.opt_scale=min_scale
-            self.opt_R=min_R    #optimal value of Y that minimizes stress
-        elif self.opt_metric.lower()=='m1':
-            minimum=float('inf')
-            min_Y=None
-            min_scale=None
-            min_R=None
+        second_term=self.Ar@R
+        return scale*second_term,scale,R
+    
+    def monte_carlo_search(self,A,max_iter=100,sample=100):
+        minimum=100000
+        min_Y=None
+        min_scale=None
+        min_R=None
+        if self.opt_metric=='m1':
             residual_norm=LA.norm(self.Ar,ord='fro')
-            for i in range(self.max_iter):
+            for i in range(max_iter):
                 Y,scale,R=self.get_Y()
                 fro_Y=LA.norm(Y,ord='fro')
-                fro_diff=abs(1-(fro_Y/residual_norm)**2)
-                if fro_diff<minimum:
-                    minimum=fro_diff
+                metric=abs(1-(fro_Y/residual_norm)**2)
+                if metric<minimum:
+                    minimum=metric
                     min_Y=Y
                     min_scale=scale
                     min_R=R
-            self.opt_Y=min_Y
-            self.m1=minimum
-            self.opt_scale=min_scale
-            self.opt_R=min_R
-    
-    def transform(self,A,monte_carlo=True,sample=100,max_iter=100):
-        Ak1=self.get_Ak(A)
-        Ar=A-Ak1
+        elif self.opt_metric=='stress':
+            for i in range(max_iter):
+                Y,scale,R=self.get_Y()
+                metric=approx_stress(self.Ar,Y,sample)
+                if metric<minimum:
+                    minimum=metric
+                    min_Y=Y
+                    min_R=R
+                    min_scale=scale
+        return minimum, min_Y, min_R, min_scale,
+
+    def fit_transform(self,A,max_iter):
+        self.n, self.D= A.shape
+        self.flag=get_flag(A)
+        # A,self.scaler=data_scaler(A)
+        self.U,self.sigma=self.calculate_u_sigma(A)
+        self.Ak1=self.get_Ak(A)
         self.X=self.get_X(A)
-        if monte_carlo:
-            self.monte_carlo_search(sample,max_iter)
-            self.Y=self.opt_scale*(Ar@self.opt_R)
-        else:
-            scale=m.sqrt(self.D/self.k2)
-            R=np.random.normal(size=(self.D,self.k2),scale=m.sqrt(1/self.D))
-            self.Y=scale*(Ar@R)
-        return np.concatenate((self.X,self.Y),axis=1)
-    
-    def fit_transform(self,A,monte_carlo=True,sample=100,max_iter=100):
-        self.fit(A)
-        return self.transform(A,monte_carlo,sample,max_iter)
+        self.Ar=A-self.Ak1
+        self.metric,self.opt_Y,self.opt_R,self.opt_scale=self.monte_carlo_search(A,max_iter)
+        self.embeddings=np.concatenate((self.X,self.opt_Y),axis=1)
+        return self.embeddings
+
+        
+
 
 
 
