@@ -3,6 +3,7 @@ import numpy.linalg as LA
 import math as m
 from sklearn.manifold import trustworthiness
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import MinMaxScaler
 from scipy import stats
 
 def metric_trustworthiness(A,Z,k=7):
@@ -43,9 +44,21 @@ def neighborhood_hit(Z,yZ,k):
 
 
 def shepard_goodness(A,Z,sample=None):
-    DA=distance_matrix(A,sample)
-    DZ=distance_matrix(Z,sample)
+    DA=distance_matrix(A,sample).flatten()
+    DZ=distance_matrix(Z,sample).flatten()
     return stats.spearmanr(DA,DZ)[0]
+
+def espadoto_stress(A,Z):
+    scaler1,scaler2=MinMaxScaler(), MinMaxScaler()
+    DA=scaler1.fit_transform(distance_matrix(A,None)).flatten()
+    DZ=scaler2.fit_transform(distance_matrix(Z,None)).flatten()
+    stress=0
+    for i in range(len(DA)):
+        stress+=(DA[i]-DZ[i])**2
+    stress/=np.sum(DA**2)
+    return stress
+
+
 
 
 

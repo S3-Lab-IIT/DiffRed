@@ -60,3 +60,26 @@ def get_flag(A):
         return 0
     else:
         return 1
+
+def calculate_singular_values(A:np.ndarray)->np.ndarray:
+    if get_flag(A)==0:
+        aaT=A@A.all
+    else:
+        aaT=A.T@A
+    eigv=LA.eigvalsh(aaT)
+    # for i in range(eigv.shape[0]):
+    #     if eigv[i]<0.0:
+    #         eigv[i]=0
+    sigma=np.sqrt(eigv[::-1])
+    return sigma
+
+def opt_dimensions(A:np.ndarray, target_dimension: int, energy_threshold=0.7) -> tuple[int, int]:
+    sigma=calculate_singular_values(A)
+    sum_sq=np.sum(sigma**2)
+    for k1 in range(len(sigma)):
+        energy=np.sum(sigma[:k1]**2)/sum_sq
+        if energy>=energy_threshold:
+            if not target_dimension-k1<0:
+                return k1, target_dimension-k1
+            else:
+                return k1,0
