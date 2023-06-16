@@ -1,1 +1,3 @@
 ./Experiments/dimensionality_reduction_metrics/datasets
+./Experiments/dimensionality_reduction_metrics/temp_data
+./Experiments/dimensionality_reduction_metrics/data_trial.ipynb
