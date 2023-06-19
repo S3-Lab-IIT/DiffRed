@@ -63,7 +63,7 @@ def get_flag(A):
 
 def calculate_singular_values(A:np.ndarray)->np.ndarray:
     if get_flag(A)==0:
-        aaT=A@A.all
+        aaT=A@A.T
     else:
         aaT=A.T@A
     eigv=LA.eigvalsh(aaT)

@@ -115,7 +115,7 @@ class Reuters100k(Dataset):
     global DATASET_DIR, CACHE_DIR
 
     def __init__(self):
-        super().__init__('Reuters10k',None)
+        super().__init__('Reuters100k',None)
     
     def download(self):
         nltk.download('reuters')
@@ -134,7 +134,7 @@ class Reuters30k(Dataset):
     global DATASET_DIR, CACHE_DIR
 
     def __init__(self):
-        super().__init__('Reuters80k',None)
+        super().__init__('Reuters30k',None)
     
     def download(self):
         nltk.download('reuters')
@@ -148,7 +148,7 @@ class Reuters30k(Dataset):
         self.set_data(X,y)
 
 
-class geneRNASeq(Dataset):\
+class geneRNASeq(Dataset):
 
     global DATASET_DIR, CACHE_DIR
 

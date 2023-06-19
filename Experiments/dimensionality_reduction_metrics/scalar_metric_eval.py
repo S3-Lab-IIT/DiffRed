@@ -18,7 +18,7 @@ M_T=[] #Trustworthiness
 M_C=[] # Continuity
 M_NH=[] #Neighborhood hit
 M_S=[] #Shepard Goodness
-M_sig=[] #Stress
+# M_sig=[] #Stress
 
 for dataset in tqdm(datasets):
     x,y=data_loader(dataset)
@@ -29,7 +29,7 @@ for dataset in tqdm(datasets):
     M_C.append(continuity(A,Z,7,None))
     M_NH.append(neighborhood_hit(Z,y,7))
     M_S.append(shepard_goodness(A,Z))
-    M_sig.append(stress(A,Z))
+    # M_sig.append(stress(A,Z))
     # print('{} done '.format(dataset))
 
 results=pd.DataFrame(list(zip(M_T,M_C,M_NH,M_S,M_sig)),index=datasets,columns=['Trustworthiness','Continuity','Neighborhood Hit','Shepard Goodness', 'Stress'])
