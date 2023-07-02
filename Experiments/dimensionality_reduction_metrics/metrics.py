@@ -5,17 +5,23 @@ from sklearn.manifold import trustworthiness
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import MinMaxScaler
 from scipy import stats
+from tqdm import tqdm
 
 def metric_trustworthiness(A,Z,k=7):
     return trustworthiness(A,Z,n_neighbors=k)
 
-def distance_matrix(A:np.ndarray,sample:int) -> np.ndarray :
+def distance_matrix(A:np.ndarray,sample:int, worker_id:int, dataset: str=None) -> np.ndarray :
     m,n=A.shape
     examples= sample if sample else m
     D=np.zeros((examples,m))
+    progress_bar_id = f"Computing {dataset}"
+    dataset_length = examples
+    progress_bar = tqdm(total=dataset_length, desc=progress_bar_id, position=worker_id)
     for i in range(examples):
         for j in range(m):
             D[i,j]=LA.norm(A[i,:]-A[j,:])
+        progress_bar.update(1)
+    progress_bar.close()
     return D
 
 def continuity(A: np.ndarray ,Z: np.ndarray ,k: int ,sample: int ):

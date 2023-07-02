@@ -1,5 +1,8 @@
 Experiments/dimensionality_reduction_metrics/datasets/
 Experiments/dimensionality_reduction_metrics/temp_data/
 Experiments/dimensionality_reduction_metrics/data_trial.ipynb
+Experiments/dimensionality_reduction_metrics/rough.ipynb
 Experiments/dimensionality_reduction_metrics/distance_matrices/
+Experiments/dimensionality_reduction_metrics/embeddings/
+Experiments/dimensionality_reduction_metrics/singular_values
 .conda/

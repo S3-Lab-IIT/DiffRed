@@ -142,7 +142,7 @@ class Reuters30k(Dataset):
     def preprocess(self):
         documents=reuters.fileids()
         vectorizer=TfidfVectorizer()
-        X = vectorizer.fit_transform(reuters.raw(doc_id) for doc_id in documents)
+        X = vectorizer.fit_transform(reuters.raw(doc_id) for doc_id in documents).toarray()
         label_binarizer=MultiLabelBinarizer()
         y=label_binarizer.fit_transform([reuters.categories(doc_id) for doc_id in documents])
         self.set_data(X,y)
@@ -190,7 +190,7 @@ class ElectricityLoadDiagrams(Dataset):
     global DATASET_DIR,CACHE_DIR
 
     def __init__(self,url):
-        super().__init__('ElectrictiyLoadDiagrams',url)
+        super().__init__('ElectricityLoadDiagrams',url)
     
     def download(self):
         self.cache_path=os.path.join(CACHE_DIR, self.name)

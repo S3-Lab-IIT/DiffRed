@@ -73,7 +73,7 @@ def calculate_singular_values(A:np.ndarray)->np.ndarray:
     sigma=np.sqrt(eigv[::-1])
     return sigma
 
-def opt_dimensions(A:np.ndarray, target_dimension: int, energy_threshold=0.7) -> tuple[int, int]:
+def opt_dimensions(A:np.ndarray, target_dimension: int, energy_threshold=0.98) -> tuple[int, int]:
     sigma=calculate_singular_values(A)
     sum_sq=np.sum(sigma**2)
     for k1 in range(len(sigma)):
