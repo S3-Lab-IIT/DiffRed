@@ -67,9 +67,9 @@ def calculate_singular_values(A:np.ndarray)->np.ndarray:
     else:
         aaT=A.T@A
     eigv=LA.eigvalsh(aaT)
-    # for i in range(eigv.shape[0]):
-    #     if eigv[i]<0.0:
-    #         eigv[i]=0
+    for i in range(eigv.shape[0]):
+        if eigv[i]<0.0:
+            eigv[i]=0
     sigma=np.sqrt(eigv[::-1])
     return sigma
 
