@@ -66,7 +66,7 @@ def calculate_singular_values(A:np.ndarray)->np.ndarray:
         aaT=A@A.T
     else:
         aaT=A.T@A
-    eigv=LA.eigvalsh(aaT)
+    eigv,eigvec=LA.eigh(aaT)
     for i in range(eigv.shape[0]):
         if eigv[i]<0.0:
             eigv[i]=0
