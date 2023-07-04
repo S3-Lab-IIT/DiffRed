@@ -111,14 +111,25 @@ def main():
 
     energy_threshold=[float(x) for x in args.energy_threshold.split()]
 
-    if args.datasets[0].lower()=='all':
+    if args.datasets.lower()=='all':
         datasets=os.listdir(args.data_dir)
     else:
         datasets=args.datasets
-    pbar=tqdm(datasets)
-    for dataset in pbar:
-        pbar.set_description(f'Plotting {dataset}...')
-        plot_data(dataset, args.data_dir, args.save_dir,args.singular_dir,energy_threshold)
+    pbar=tqdm(datasets, desc='Plotting')
+    # for dataset in pbar:
+    #     pbar.set_description(f'Plotting {dataset}...')
+    #     plot_data(dataset, args.data_dir, args.save_dir,args.singular_dir,energy_threshold)
+
+    num_cores=cpu_count()
+    pool=Pool(processes=num_cores)
+
+    results=[pool.apply_async(plot_data, args=(dataset,args.data_dir,args.save_dir,args.singular_dir,energy_threshold)) for dataset in pbar]
+
+    for result in results:
+        result.wait()
+    pool.close()
+    pool.join()
+
 
 if __name__=="__main__":
     main()
