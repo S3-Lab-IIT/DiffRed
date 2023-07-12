@@ -7,4 +7,5 @@ Experiments/dimensionality_reduction_metrics/embeddings/
 Experiments/dimensionality_reduction_metrics/normalized_data/
 Experiments/dimensionality_reduction_metrics/singular_values
 Experiments/dimensionality_reduction_metrics/norm_singular_values
+Experiments/dimensionality_reduction_metrics/results/stress_results1.xlsx
 .conda/
