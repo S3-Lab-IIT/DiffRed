@@ -15,10 +15,10 @@ def parse_arguments():
     parser=argparse.ArgumentParser(description='Compute and save the spectral plots of the datasets')
     parser.add_argument('--save_dir', '-s', help='Directory where the plots are to be saved', default='./spectral_plots')
     parser.add_argument('--datasets','-d', nargs='+', help='Datasets whose plots are to be computed', default='all')
-    parser.add_argument('--data_dir', help='Directory where datasets are stored', default='./datasets')
+    parser.add_argument('--data_dir', help='Directory where datasets are stored', default='./normalized_data')
     parser.add_argument('--sample_percentage', help='Percentage of data to be sampled for computation')
     parser.add_argument('--energy_threshold', '-e', help='List of energy thresholds to annotate seperated by space', default='0.90 0.95 0.98 0.99')
-    parser.add_argument('--singular_dir', help='Directory to save singular values/Directory where singular values are saved', default='./singular_values')
+    parser.add_argument('--singular_dir', help='Directory to save singular values/Directory where singular values are saved', default='./norm_singular_values')
 
     args=parser.parse_args()
     return args
@@ -111,7 +111,7 @@ def main():
 
     energy_threshold=[float(x) for x in args.energy_threshold.split()]
 
-    if args.datasets.lower()=='all':
+    if args.datasets[0].lower()=='all':
         datasets=os.listdir(args.data_dir)
     else:
         datasets=args.datasets

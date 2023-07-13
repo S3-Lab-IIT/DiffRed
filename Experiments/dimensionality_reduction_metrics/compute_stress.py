@@ -28,7 +28,7 @@ def parse_arguments():
     parser.add_argument('--file_name', '-f', help='Name of the excel file where results are to be updated/File name of the excel file to be created', default='stress_results')
     parser.add_argument('--dataset','-d',help='Name of the dataset whose stress is to be computed')
     parser.add_argument('--data_dir', help='Directory where the datasets are stored', default='./normalized_data' )
-    parser.add_argument('--dist_dir', help='Directory where distance matrices are saved', default='./distance_matrices')
+    parser.add_argument('--dist_dir', help='Directory where distance matrices are saved', default='./norm_dist_matrices')
     parser.add_argument('--k1', help='List of k1 values seperated by space', nargs='+')
     parser.add_argument('--k2', help='List of corresponding k2 values seperated by space', nargs='+')
     parser.add_argument('--max_iter', help='List of max iter values corresponding to k1 and k2', nargs='+')
