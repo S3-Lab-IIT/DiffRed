@@ -51,7 +51,7 @@ def get_exp_values(file_path:str, target_dim:int):
 def plot_stress(dataset:str, SAVE_DIR:str, TH_DIR:str, EXP_FILE:str, target_dim:int):
 
     global lock
-    save_dir=os.path.join(SAVE_DIR,f'dataset')
+    save_dir=os.path.join(SAVE_DIR,f'{dataset}')
 
     if not os.path.exists(save_dir):
         lock.acquire()
