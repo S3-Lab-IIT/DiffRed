@@ -19,7 +19,7 @@ def parse_arguments():
     parser.add_argument('--dataset','-d', help='Dataset')
     parser.add_argument('--sing_dir', help='Directory where singular values are stored', default='./norm_singular_values')
     parser.add_argument('--target_dims', nargs='+', help='Target dimensions at which theoretical optimum is to be calculated')
-    parser.add_argument('--metric', '-m', help='Metric whose theoretical optimum is needed', choices=['stress', 'm1'])
+    parser.add_argument('--metric', '-m', help='Metric whose theoretical optimum is needed', choices=['stress', 'm1'], default='stress')
     parser.add_argument('--save_dir', help='Directory where results are to be saved', default='./results')
     parser.add_argument('--file_name', help='Name of the excel file (without extension)', default='theoretical_optimum')
 
