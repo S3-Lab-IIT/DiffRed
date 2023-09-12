@@ -9,4 +9,7 @@ Experiments/dimensionality_reduction_metrics/singular_values
 Experiments/dimensionality_reduction_metrics/norm_singular_values
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/pca_embeddings/
 Experiments/dimensionality_reduction_metrics/norm_dist_matrices/
+Experiments/dimensionality_reduction_metrics/other_dr_techniques/logs
+Experiments/dimensionality_reduction_metrics/other_dr_techniques/embeddings/
+.vscode/*
 .conda/*
