@@ -9,6 +9,8 @@ from datetime import datetime
 from tqdm import tqdm
 from multiprocessing import cpu_count,Pool, Lock
 from share_array.share_array import get_shared_array, make_shared_array
+from itertools import product
+from settings import SETTINGS
 
 lock=Lock()
 
@@ -52,18 +54,32 @@ def stress(dist_matrix:np.ndarray,Z:np.ndarray, worker_desc:str,worker_id:int):
 def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str, worker_id:int, target_dim:int,dr_technique:str,setting:str):
 
     global lock
+    # lock.acquire()
+    # if os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+        
+    #     result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
 
+    #     # already_computed=result_sheet.iloc[1:, 1:4].apply(lambda x: x.equals(pd.Series([dataset, setting, target_dim])), axis=1).any()
+    #     already_computed=result_sheet[(result_sheet['Dataset']==dataset) & (result_sheet['Setting']==setting) & (result_sheet['Target Dimension']==target_dim)].empty
+    #     if already_computed:
+    #         print(f"Stress has already been computed for Dataset:{dataset}, Setting:{setting}, Target dim: {target_dim}")
+    #         lock.release()
+    #         return
+    # lock.release()
     dist_matrix=get_shared_array('dist_matrix')
-
-    if setting=='def':
-        Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_{dr_technique}.npy'))
+    if dr_technique=='PCA':
+        if setting=='def':
+            Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_{dr_technique}.npy'))
+        else:
+            Z=np.load(os.path.join(EMBED_DIR, dataset, dr_technique, f'{dataset}_{target_dim}_{setting}.npy'))
     else:
-        Z=np.load(os.path.join(EMBED_DIR, dataset, dr_technique, f'{dataset}_{target_dim}_{setting}.npy'))
+        Z=np.load(os.path.join(EMBED_DIR,dataset,dr_technique,f'{dataset}_{target_dim}_{setting}.npy'))
 
-    worker_desc=f'{dataset}_{setting}_{target_dim}'
+    worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
 
     stress_val=stress(dist_matrix, Z, worker_desc, worker_id)
 
+    
     lock.acquire()
     if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
 
@@ -73,7 +89,6 @@ def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_
         df.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
     
     new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, setting, target_dim,stress_val]
-
     result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
 
     result_sheet.loc[len(result_sheet.index)]=new_row
@@ -93,10 +108,18 @@ def main():
     num_cores=cpu_count()
     pool=Pool(processes=num_cores)
 
-    results=[pool.apply_async(compute_stress, args=(args.dataset, args.dist_dir,args.save_dir, args.embed_dir, args.file_name,i, target_dims[i], args.dr_tech, args.setting)) for i in range(len(target_dims))]
+    if not args.setting=='all':
 
-    for result in results:
-        result.wait()
+        results=[pool.apply_async(compute_stress, args=(args.dataset, args.dist_dir,args.save_dir, args.embed_dir, args.file_name,i, target_dims[i], args.dr_tech, args.setting)) for i in range(len(target_dims))]
+    else:
+
+        all_settings=[k for k in SETTINGS[args.dr_tech].keys()]
+        combinations=product(target_dims, all_settings)
+
+        results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir, args.save_dir, args.embed_dir, args.file_name, i ,target_dim, args.dr_tech, setting)) for i, (target_dim, setting) in enumerate(combinations)]
+
+    # for result in results:
+    #     result.wait()
     
     pool.close()
     pool.join()
