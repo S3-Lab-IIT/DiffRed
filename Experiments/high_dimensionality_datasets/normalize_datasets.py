@@ -3,7 +3,6 @@ import numpy.linalg as LA
 import math as m
 import os
 import argparse
-from metrics import distance_matrix
 from tqdm import tqdm
 from multiprocessing import cpu_count,Pool
 from sklearn.preprocessing import StandardScaler, normalize
