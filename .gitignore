@@ -11,6 +11,7 @@ Experiments/dimensionality_reduction_metrics/other_dr_techniques/pca_embeddings/
 Experiments/dimensionality_reduction_metrics/norm_dist_matrices/
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/logs
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/embeddings/
+Experiments/dimensionality_reduction_metrics/test.py
 Experiments/high_dimensionality_datasets/datasets/
 Experiments/high_dimensionality_datasets/test.py
 Experiments/high_dimensionality_datasets/datasets/slurm_job_scripts/test.sh
