@@ -20,5 +20,6 @@ Experiments/high_dimensionality_datasets/logs/
 Experiments/high_dimensionality_datasets/norm_singular_values/
 Experiments/high_dimensionality_datasets/normalized_data/
 Experiments/high_dimensionality_datasets/temp_dir/
+Experiments/dimensionality_reduction_metrics/other_dr_techniques/rmap_embeddings/
 .vscode/*
 .conda/*
