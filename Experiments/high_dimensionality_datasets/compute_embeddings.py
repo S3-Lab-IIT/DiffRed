@@ -24,15 +24,21 @@ def parse_arguments():
     return args
 
 def compute_embeddings(dataset:str, DATA_DIR: str, SAVE_DIR: str, k1:int, k2:int, max_iter:int ):
-    X=np.load(os.path.join(DATA_DIR,dataset,'X.npy'),allow_pickle=True)
-    dr=DiffRed(k1,k2)
-    if os.path.exists(os.path.join(SAVE_DIR,dataset, f'{k1}_{k2}_{max_iter}.npy')):
-        print(f"Emebddings already saved for k1={k1}, k2={k2} max_iter={max_iter}")
-        return
-    Z=dr.fit_transform(X,max_iter)
-    if not os.path.exists(os.path.join(SAVE_DIR,dataset)):
-        os.mkdir(os.path.join(SAVE_DIR,dataset))
-    np.save(os.path.join(SAVE_DIR,dataset,f'{k1}_{k2}_{max_iter}.npy'),Z)
+
+    print(f"Computing k1= {k1} k2={k2}")
+    if not os.path.exists(os.path.join(SAVE_DIR,dataset, f'{k1}_{k2}_{max_iter}.npy')):
+        X=np.load(os.path.join(DATA_DIR,dataset,'X.npy'),allow_pickle=True)
+        dr=DiffRed(k1,k2)
+        if os.path.exists(os.path.join(SAVE_DIR,dataset, f'{k1}_{k2}_{max_iter}.npy')):
+            print(f"Emebddings already saved for k1={k1}, k2={k2} max_iter={max_iter}")
+            return
+        Z=dr.fit_transform(X,max_iter)
+        if not os.path.exists(os.path.join(SAVE_DIR,dataset)):
+            os.mkdir(os.path.join(SAVE_DIR,dataset))
+        np.save(os.path.join(SAVE_DIR,dataset,f'{k1}_{k2}_{max_iter}.npy'),Z)
+    
+    else:
+        print(f'Embeddings already saved for k1={k1}, k2={k2}')
 
 
 
@@ -51,10 +57,10 @@ def main():
     
     # pbar=tqdm(dr_args, desc='Computing...')
 
-    results=[pool.apply_async(compute_embeddings,args=(args.dataset,args.data_dir,args.save_dir, arg[0],arg[1],arg[2])) for arg in dr_args]
+    results=[pool.apply(compute_embeddings,args=(args.dataset,args.data_dir,args.save_dir, arg[0],arg[1],arg[2])) for arg in dr_args]
 
-    for result in tqdm(results):
-        result.wait()
+    # for result in tqdm(results):
+    #     result.wait()
     
     pool.close()
     pool.join()
