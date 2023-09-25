@@ -11,6 +11,7 @@ Experiments/dimensionality_reduction_metrics/other_dr_techniques/pca_embeddings/
 Experiments/dimensionality_reduction_metrics/norm_dist_matrices/
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/logs
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/embeddings/
+Experiments/dimensionality_reduction_metrics/test.py
 Experiments/high_dimensionality_datasets/datasets/
 Experiments/high_dimensionality_datasets/test.py
 Experiments/high_dimensionality_datasets/datasets/slurm_job_scripts/test.sh
@@ -19,5 +20,15 @@ Experiments/high_dimensionality_datasets/logs/
 Experiments/high_dimensionality_datasets/norm_singular_values/
 Experiments/high_dimensionality_datasets/normalized_data/
 Experiments/high_dimensionality_datasets/temp_dir/
+Experiments/dimensionality_reduction_metrics/other_dr_techniques/rmap_embeddings/
+Experiments/high_dimensionality_datasets/datasets/
+Experiments/high_dimensionality_datasets/test.py
+Experiments/high_dimensionality_datasets/datasets/slurm_job_scripts/test.sh
+Experiments/high_dimensionality_datasets/distance_matrices/
+Experiments/high_dimensionality_datasets/logs/
+Experiments/high_dimensionality_datasets/norm_singular_values/
+Experiments/high_dimensionality_datasets/normalized_data/
+Experiments/high_dimensionality_datasets/temp_dir/
+Experiments/high_dimensionality_datasets/embeddings/
 .vscode/*
 .conda/*
