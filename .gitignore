@@ -20,7 +20,6 @@ Experiments/high_dimensionality_datasets/logs/
 Experiments/high_dimensionality_datasets/norm_singular_values/
 Experiments/high_dimensionality_datasets/normalized_data/
 Experiments/high_dimensionality_datasets/temp_dir/
-<<<<<<< Updated upstream
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/rmap_embeddings/
 Experiments/high_dimensionality_datasets/datasets/
 Experiments/high_dimensionality_datasets/test.py
@@ -30,8 +29,6 @@ Experiments/high_dimensionality_datasets/logs/
 Experiments/high_dimensionality_datasets/norm_singular_values/
 Experiments/high_dimensionality_datasets/normalized_data/
 Experiments/high_dimensionality_datasets/temp_dir/
-=======
->>>>>>> Stashed changes
 Experiments/high_dimensionality_datasets/embeddings/
 .vscode/*
 .conda/*

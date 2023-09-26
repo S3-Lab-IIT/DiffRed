@@ -57,7 +57,7 @@ def main():
     
     # pbar=tqdm(dr_args, desc='Computing...')
 
-    results=[pool.apply(compute_embeddings,args=(args.dataset,args.data_dir,args.save_dir, arg[0],arg[1],arg[2])) for arg in dr_args]
+    results=[pool.apply_async(compute_embeddings,args=(args.dataset,args.data_dir,args.save_dir, arg[0],arg[1],arg[2])) for arg in dr_args]
 
     # for result in tqdm(results):
     #     result.wait()
