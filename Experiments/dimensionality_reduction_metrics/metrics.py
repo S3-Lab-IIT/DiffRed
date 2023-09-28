@@ -24,9 +24,13 @@ def distance_matrix(A:np.ndarray,sample:int, worker_id:int, dataset: str=None) -
     progress_bar.close()
     return D
 
-def continuity(A: np.ndarray ,Z: np.ndarray ,k: int ,sample: int ):
-    DA=distance_matrix(A,sample)
-    DZ=distance_matrix(Z,sample)
+def continuity(A: np.ndarray ,Z: np.ndarray ,k: int ,sample: int, dist_matrix:np.ndarray=None ):
+    if dist_matrix!=None:
+        DA=dist_matrix
+        
+    else:
+        DA=distance_matrix(A,sample, worker_id=0)
+    DZ=distance_matrix(Z,sample, worker_id=0,dataset='Embedding Dist Matrix')
     m,n=A.shape
     examples= sample if sample else m
     nnA=DA.argsort()

@@ -21,6 +21,7 @@ Experiments/high_dimensionality_datasets/norm_singular_values/
 Experiments/high_dimensionality_datasets/normalized_data/
 Experiments/high_dimensionality_datasets/temp_dir/
 Experiments/dimensionality_reduction_metrics/other_dr_techniques/rmap_embeddings/
+<<<<<<< Updated upstream
 Experiments/high_dimensionality_datasets/datasets/
 Experiments/high_dimensionality_datasets/test.py
 Experiments/high_dimensionality_datasets/datasets/slurm_job_scripts/test.sh
@@ -32,5 +33,10 @@ Experiments/high_dimensionality_datasets/temp_dir/
 Experiments/high_dimensionality_datasets/embeddings/
 Experiments/high_dimensionality_datasets/pca_embeddings/
 Experiments/high_dimensionality_datasets/__pycache__/
+=======
+Applications/visualization/rough.ipynb
+Experiments/dimensionality_reduction_metrics/__pycache__/*
+Experiments/dimensionality_reduction_metrics/__pycache__/*
+>>>>>>> Stashed changes
 .vscode/*
 .conda/*

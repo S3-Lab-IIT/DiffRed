@@ -51,7 +51,7 @@ def stress(dist_matrix:np.ndarray,Z:np.ndarray, worker_desc:str,worker_id:int):
     return m.sqrt(stress/sum_sq)
 
 
-def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str, worker_id:int, target_dim:int,dr_technique:str,setting:str):
+def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str, worker_id:int, target_dim:int,dr_technique:str,setting:str, dr_args:str):
 
     global lock
     # lock.acquire()
@@ -72,28 +72,74 @@ def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_
             Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_{dr_technique}.npy'))
         else:
             Z=np.load(os.path.join(EMBED_DIR, dataset, dr_technique, f'{dataset}_{target_dim}_{setting}.npy'))
+        worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
+
+        stress_val=stress(dist_matrix, Z, worker_desc, worker_id)
+
+        
+        lock.acquire()
+        if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+
+            column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'Stress']
+
+            df=pd.DataFrame(columns=column_names)
+            df.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, setting, target_dim,stress_val]
+        result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+        result_sheet.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        lock.release()
+    elif dr_technique=='RMap':
+        eta=int(dr_args)
+
+        for i in range(eta):
+            Z=np.load(os.path.join(EMBED_DIR, dataset, str(target_dim), f'{i}.npy'))
+            worker_desc=f'{dataset}_{dr_technique}_{target_dim}'
+            stress_val=stress(dist_matrix, Z, worker_desc, worker_id*i)
+            lock.acquire()
+            if not os.path.exists(os.path.join(SAVE_DIR, dataset)):
+                os.mkdir(os.path.join(SAVE_DIR, dataset))
+            if not os.path.exists(os.path.join(SAVE_DIR, dataset,f'{file_name}_{target_dim}.xlsx')):
+
+                column_names=['Timestamp', 'Dataset', 'Target Dimension', 'Instance', 'Stress']
+
+                df=pd.DataFrame(columns=column_names)
+                df.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
+            
+            new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, target_dim, i, stress_val]
+            result_sheet=pd.read_excel(os.path.join(SAVE_DIR, dataset, f'{file_name}_{target_dim}.xlsx'))
+
+            result_sheet.loc[len(result_sheet.index)]=new_row
+            result_sheet.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
+            lock.release()
+
+
+
     else:
         Z=np.load(os.path.join(EMBED_DIR,dataset,dr_technique,f'{dataset}_{target_dim}_{setting}.npy'))
-
-    worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
-
-    stress_val=stress(dist_matrix, Z, worker_desc, worker_id)
-
     
-    lock.acquire()
-    if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
 
-        column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'Stress']
+        worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
 
-        df=pd.DataFrame(columns=column_names)
-        df.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
-    
-    new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, setting, target_dim,stress_val]
-    result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
+        stress_val=stress(dist_matrix, Z, worker_desc, worker_id)
 
-    result_sheet.loc[len(result_sheet.index)]=new_row
-    result_sheet.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
-    lock.release()
+        
+        lock.acquire()
+        if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+
+            column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'Stress']
+
+            df=pd.DataFrame(columns=column_names)
+            df.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, setting, target_dim,stress_val]
+        result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+        result_sheet.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        lock.release()
 
 
 def main():
@@ -110,13 +156,13 @@ def main():
 
     if not args.setting=='all':
 
-        results=[pool.apply_async(compute_stress, args=(args.dataset, args.dist_dir,args.save_dir, args.embed_dir, args.file_name,i, target_dims[i], args.dr_tech, args.setting)) for i in range(len(target_dims))]
+        results=[pool.apply_async(compute_stress, args=(args.dataset, args.dist_dir,args.save_dir, args.embed_dir, args.file_name,i, target_dims[i], args.dr_tech, args.setting, args.dr_args)) for i in range(len(target_dims))]
     else:
 
         all_settings=[k for k in SETTINGS[args.dr_tech].keys()]
         combinations=product(target_dims, all_settings)
 
-        results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir, args.save_dir, args.embed_dir, args.file_name, i ,target_dim, args.dr_tech, setting)) for i, (target_dim, setting) in enumerate(combinations)]
+        results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir, args.save_dir, args.embed_dir, args.file_name, i ,target_dim, args.dr_tech, setting, args.dr_args)) for i, (target_dim, setting) in enumerate(combinations)]
 
     # for result in results:
     #     result.wait()
