@@ -30,5 +30,7 @@ Experiments/high_dimensionality_datasets/norm_singular_values/
 Experiments/high_dimensionality_datasets/normalized_data/
 Experiments/high_dimensionality_datasets/temp_dir/
 Experiments/high_dimensionality_datasets/embeddings/
+Experiments/high_dimensionality_datasets/pca_embeddings/
+Experiments/high_dimensionality_datasets/__pycache__/
 .vscode/*
 .conda/*

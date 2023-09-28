@@ -30,6 +30,8 @@ def parse_arguments():
     parser.add_argument('--k2', help='List of corresponding k2 values seperated by space', nargs='+')
     parser.add_argument('--max_iter', help='List of max iter values corresponding to k1 and k2', nargs='+')
     parser.add_argument('--max_iter_list', help='True if max_iter is a list. If false then the single value provided is assumed to be for all the target dimensions.', default='True')
+    parser.add_argument('--target_dims', '-t', help='List of target dimensions seperated by space for RMap and PCA, not required for DiffRed as k1 and k2 are sufficient', nargs='+', default='na')
+    parser.add_argument('--dr_tech', help='DR Technique whose stress is to be calculated', default='DiffRed', choices=['DiffRed', 'PCA', 'RMap'])
 
     parser.add_argument('--use_memoized_embeddings', '-u', type=bool, help='Use memoized embeddings (T) or compute fresh(F)', default=True)
 
@@ -56,11 +58,15 @@ def stress(dist_matrix:np.ndarray,Z:np.ndarray, worker_desc:str,worker_id:int):
 
 
 
-def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:int, k2:int, max_iter:int, worker_id:int ):
+def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:int, k2:int, max_iter:int, worker_id:int, dr_tech:str, target_dim:int ):
     global lock
     # dist_matrix= np.load(os.path.join(DIST_DIR,f'{dataset}.npy'))
     dist_matrix=get_shared_array('dist_matrix')
-    Z= np.load(os.path.join(EMBED_DIR,dataset, f'{k1}_{k2}_{max_iter}.npy'))
+    
+    if dr_tech=='DiffRed':
+        Z= np.load(os.path.join(EMBED_DIR,dataset, f'{k1}_{k2}_{max_iter}.npy'))
+    elif dr_tech=='PCA':
+        Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_pca.npy'))
    
     
 
@@ -72,7 +78,11 @@ def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_
     lock.acquire()
     if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
 
-        column_names=['Timestamp', 'Dataset','Max_iter','Target Dimension', 'k1', 'k2', 'Stress' ]
+        if dr_tech=='DiffRed':
+            column_names=['Timestamp', 'Dataset','Max_iter','Target Dimension', 'k1', 'k2', 'Stress' ]
+        else:
+            column_names=['Timestamp', 'Dataset', 'DR Technique','Target Dimension', 'Stress' ]
+
 
         df=pd.DataFrame(columns=column_names)
         df.to_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'), index=False)
@@ -86,7 +96,11 @@ def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_
     #     'k2':k2,
     #     'Stress':stress_val
     # }
-    new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,max_iter,k1+k2,k1,k2,stress_val]
+    
+    if dr_tech=='DiffRed':
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,max_iter,k1+k2,k1,k2,stress_val]
+    else:
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,dr_tech,target_dim,stress_val]
 
     result_sheet=pd.read_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'))
 
@@ -100,13 +114,7 @@ def main():
 
 
     args=parse_arguments()
-    k1=[int(x) for x in args.k1]
-    k2=[int(x) for x in args.k2]
-    if args.max_iter_list=='True':
-        max_iter=[int(x) for x in args.max_iter]
-    else:
-        max_iter=[int(args.max_iter[0]) for x in range(len(k1))]
-    dr_args=list(zip(k1,k2,max_iter))
+    
 
     dist_matrix= np.load(os.path.join(args.dist_dir,f'{args.dataset}.npy'))
     make_shared_array(dist_matrix,name='dist_matrix')
@@ -119,7 +127,20 @@ def main():
         num_cores=cpu_count()
         pool=Pool(processes=num_cores)
 
-        results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i)) for i in range(len(dr_args))]
+        if args.dr_tech=='DiffRed':
+            k1=[int(x) for x in args.k1]
+            k2=[int(x) for x in args.k2]
+            if args.max_iter_list=='True':
+                max_iter=[int(x) for x in args.max_iter]
+            else:
+                max_iter=[int(args.max_iter[0]) for x in range(len(k1))]
+            dr_args=list(zip(k1,k2,max_iter))
+
+            results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i, args.dr_tech, None)) for i in range(len(dr_args))]
+        else:
+            target_dims=[int(x) for x in args.target_dims]
+
+            results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir,args.save_dir,args.embed_dir,args.file_name,None,None,None,i, args.dr_tech, target_dims[i])) for i in range(len(target_dims))]
 
         for result in results:
             result.wait()
