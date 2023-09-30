@@ -37,7 +37,7 @@ def parse_arguments():
 def fr_sq(A:np.ndarray):
     return LA.norm(A, ord='fro')**2
 
-def compute_m1(dataset:str, DATA_DIR:str, SAVE_DIR: str, EMBED_DIR: str, file_name: str, target_dim:int, dr_technique:str, setting:str):
+def compute_m1(dataset:str, DATA_DIR:str, SAVE_DIR: str, EMBED_DIR: str, file_name: str, target_dim:int, dr_technique:str, setting:str,dr_args:str):
     
     global lock
     if dr_technique=='PCA':
@@ -45,31 +45,79 @@ def compute_m1(dataset:str, DATA_DIR:str, SAVE_DIR: str, EMBED_DIR: str, file_na
             Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_pca.npy'))
         else:
             Z=np.load(os.path.join(EMBED_DIR, dataset, dr_technique, f'{dataset}_{target_dim}_{setting}.npy'))
+        A=np.load(os.path.join(DATA_DIR,dataset, 'X.npy'))
+
+        m1_val= abs(1-(fr_sq(Z)/fr_sq(A)))
+
+        save_file=os.path.join(SAVE_DIR, f'{file_name}.xlsx')
+
+        lock.acquire()
+        if not os.path.exists(save_file):
+
+            column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'M1']
+
+            df= pd.DataFrame(columns=column_names)
+            df.to_excel(save_file, index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,setting, target_dim, m1_val]
+
+        result_sheet=pd.read_excel(save_file)
+        
+        result_sheet.loc[len(result_sheet.index)]=new_row
+
+        result_sheet.to_excel(save_file, index=False)
+
+        lock.release()
+    elif dr_technique=='RMap':
+        A=np.load(os.path.join(DATA_DIR,dataset, 'X.npy'))
+        eta=int(dr_args)
+
+        for i in tqdm(range(eta), desc=f'RMap M1 {dataset} Target Dim: {target_dim}...'):
+            Z=np.load(os.path.join(EMBED_DIR, dataset, str(target_dim), f'{i}.npy'))
+            m1_val=abs(1-(fr_sq(Z)/fr_sq(A)))
+            lock.acquire()
+            if not os.path.exists(os.path.join(SAVE_DIR, dataset)):
+                os.mkdir(os.path.join(SAVE_DIR, dataset))
+            if not os.path.exists(os.path.join(SAVE_DIR, dataset,f'{file_name}_{target_dim}.xlsx')):
+
+                column_names=['Timestamp', 'Dataset', 'Target Dimension', 'Instance', 'M1']
+
+                df=pd.DataFrame(columns=column_names)
+                df.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
+            
+            new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, target_dim, i, m1_val]
+            result_sheet=pd.read_excel(os.path.join(SAVE_DIR, dataset, f'{file_name}_{target_dim}.xlsx'))
+
+            result_sheet.loc[len(result_sheet.index)]=new_row
+            result_sheet.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
+            lock.release()
     else:
         Z=np.load(os.path.join(EMBED_DIR,dataset,dr_technique,f'{dataset}_{target_dim}_{setting}.npy'))
-    A=np.load(os.path.join(DATA_DIR,dataset, 'X.npy'))
 
-    m1_val= abs(1-(fr_sq(Z)/fr_sq(A)))
+        A=np.load(os.path.join(DATA_DIR,dataset, 'X.npy'))
 
-    save_file=os.path.join(SAVE_DIR, f'{file_name}.xlsx')
+        m1_val= abs(1-(fr_sq(Z)/fr_sq(A)))
 
-    lock.acquire()
-    if not os.path.exists(save_file):
+        save_file=os.path.join(SAVE_DIR, f'{file_name}.xlsx')
 
-        column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'M1']
+        lock.acquire()
+        if not os.path.exists(save_file):
 
-        df= pd.DataFrame(columns=column_names)
-        df.to_excel(save_file, index=False)
+            column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'M1']
+
+            df= pd.DataFrame(columns=column_names)
+            df.to_excel(save_file, index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,setting, target_dim, m1_val]
+
+        result_sheet=pd.read_excel(save_file)
+        
+        result_sheet.loc[len(result_sheet.index)]=new_row
+
+        result_sheet.to_excel(save_file, index=False)
+
+        lock.release()
     
-    new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,setting, target_dim, m1_val]
-
-    result_sheet=pd.read_excel(save_file)
-    
-    result_sheet.loc[len(result_sheet.index)]=new_row
-
-    result_sheet.to_excel(save_file, index=False)
-
-    lock.release()
 
 
 def main():
@@ -81,13 +129,13 @@ def main():
 
     if not args.setting=='all':
 
-        results=[pool.apply_async(compute_m1, args=(args.dataset, args.data_dir,args.save_dir, args.embed_dir, args.file_name, target_dims[i], args.dr_tech, args.setting)) for i in range(len(target_dims))]
+        results=[pool.apply_async(compute_m1, args=(args.dataset, args.data_dir,args.save_dir, args.embed_dir, args.file_name, target_dims[i], args.dr_tech, args.setting, args.dr_args)) for i in range(len(target_dims))]
     else:
 
         all_settings=[k for k in SETTINGS[args.dr_tech].keys()]
         combinations=product(target_dims, all_settings)
 
-        results=[pool.apply_async(compute_m1, args=(args.dataset,args.data_dir, args.save_dir, args.embed_dir, args.file_name, target_dim, args.dr_tech, setting)) for target_dim, setting in combinations]
+        results=[pool.apply_async(compute_m1, args=(args.dataset,args.data_dir, args.save_dir, args.embed_dir, args.file_name, target_dim, args.dr_tech, setting, args.dr_args)) for target_dim, setting in combinations]
 
     for result in results:
         result.wait()
