@@ -37,5 +37,6 @@ Applications/visualization/rough.ipynb
 Experiments/dimensionality_reduction_metrics/__pycache__/*
 Experiments/dimensionality_reduction_metrics/__pycache__/*
 Experiments/dimensionality_reduction_metrics/test.xlsx
+kaggle.json
 .vscode/*
 .conda/*

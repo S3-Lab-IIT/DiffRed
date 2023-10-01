@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 from urllib.request import urlretrieve
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder,MultiLabelBinarizer
+from kaggle.api.kaggle_api_extended import KaggleApi
 # from tensorflow.keras.datasets import fashion_mnist, cifar10
 # import nltk
 # from nltk.corpus import reuters
@@ -24,7 +25,7 @@ import cv2
 def parse_arguments():
     parser=argparse.ArgumentParser(description='Download and preprocess the DIV2K dataset')
 
-    parser.add_argument('-d', '--dataset', help='Name of the dataset', choices=['DIV2k', 'APTOS'])
+    parser.add_argument('-d', '--dataset', help='Name of the dataset', choices=['DIV2k', 'aptos2019'])
 
     parser.add_argument('--data_dir', help='Directory where final preprocessed data is to be stored', default='./datasets')
 
@@ -106,7 +107,56 @@ class DIV2K(Dataset):
         X=np.array(X)
 
         self.set_data(X,None)
+
+
+class APTOS2019(Dataset):
+
+    global DATASET_DIR, CACHE_DIR
+    def __init__(self,url):
+        super().__init__('aptos2019',url)
+        self.downloaded=False
     
+    def download(self):
+        self.cache_path=os.path.join(CACHE_DIR,self.name)
+
+        if not os.path.exists(self.cache_path):
+            os.mkdir(self.cache_path)
+        
+        try:
+            api=KaggleApi()
+            api.authenticate()
+            api.competiton_download_files(self.url,path=self.cache_path)
+            self.downloaded=True
+        except Exception as e:
+            self.downloaded=False
+            return
+
+    def preprocess(self, width=358, height=474):
+
+        if not self.downloaded:
+            self.cache_path=os.path.join(CACHE_DIR,self.name)
+
+            if os.path.exists(os.path.join(self.cache_path, 'aptos2019-blindness-detection.zip')):
+
+                self.zip_path=os.path.join(self.cache_path, 'aptos2019-blindness-detection.zip')
+
+                with zipfile.ZipFile(self.zip_path, 'r') as zip_file:
+                    zip_file.extractall(self.cache_path)
+                os.remove(self.zip_path)\
+        
+        self.img_dir=os.path.join(self.cache_path, 'train_images')
+
+        X=[]
+        for img in os.listdir(self.img_dir):
+            img_path=os.path.join(self.img_dir,img)
+            image=cv2.imread(img_path)
+            resized_image = cv2.resize(image, (width, height))
+            image_vector = resized_image.flatten()
+            X.append(image_vector)
+        
+        X=np.array(X)
+
+        self.set_data(X,None)
 
 if __name__=="__main__":
 
@@ -123,8 +173,13 @@ if __name__=="__main__":
             div2k.save_as_numpy()
         else:
             print('Dataset already exists, clear the dataset directory to download again')
-    elif args.dataset=='APTOS':
-        print("Code not implemented")
+    elif args.dataset=='aptos2019':
+        
+        aptos2019=APTOS2019(url='aptos2019-blindness-detection')
+        
+        aptos2019.download()
+        aptos2019.preprocess()
+        aptos2019.save_as_numpy()
     
     else:
         print("Dataset not valid")
