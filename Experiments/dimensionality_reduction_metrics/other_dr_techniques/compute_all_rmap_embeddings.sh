@@ -1,7 +1,6 @@
 #!/bin/bash
-datasets="Cifar10 Bank FMnist Reuters30k geneRNASeq"
 
-
+datasets="Cifar10 Bank FMnist Reuters30k geneRNASeq hatespeech"
 
 common_t_value="10 20 30 40 50"
 bank_t_value="1 2 3 5 6 7 8 10"
