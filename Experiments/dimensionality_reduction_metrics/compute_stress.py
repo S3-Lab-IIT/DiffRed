@@ -32,6 +32,7 @@ def parse_arguments():
     parser.add_argument('--k1', help='List of k1 values seperated by space', nargs='+')
     parser.add_argument('--k2', help='List of corresponding k2 values seperated by space', nargs='+')
     parser.add_argument('--max_iter', help='List of max iter values corresponding to k1 and k2', nargs='+')
+    parser.add_argument('--max_iter_list', help='True if max_iter is a list. If false then the single value provided is assumed to be for all the target dimensions.', default='True')
 
     parser.add_argument('--use_memoized_embeddings', '-u', type=bool, help='Use memoized embeddings (T) or compute fresh(F)', default=True)
 
@@ -104,7 +105,10 @@ def main():
     args=parse_arguments()
     k1=[int(x) for x in args.k1]
     k2=[int(x) for x in args.k2]
-    max_iter=[int(x) for x in args.max_iter]
+    if args.max_iter_list=='True':
+        max_iter=[int(x) for x in args.max_iter]
+    else:
+        max_iter=[int(args.max_iter[0]) for x in range(len(k1))]
     dr_args=list(zip(k1,k2,max_iter))
 
     dist_matrix= np.load(os.path.join(args.dist_dir,f'{args.dataset}.npy'))
