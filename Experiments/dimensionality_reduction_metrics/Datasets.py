@@ -271,6 +271,42 @@ class DIV2K(Dataset):
         self.set_data(X,None)
 
 
+class hatespeech(Dataset):
+
+    global DATASET_DIR, CACHE_DIR
+
+    def __init__(self, name, url):
+        super().__init__(name, url)
+        self.downloaded=False
+    
+    def download(self):
+        self.x_url=self.url['X']
+        self.y_url=self.url['y']
+
+        self.cache_path=os.path.join(CACHE_DIR, self.name)
+        if not os.path.exists(self.cache_path):
+            os.mkdir(self.cache_path)
+        
+        parsed_url_x,parsed_url_y=urlparse(self.x_url), urlparse(self.y_url)
+        x_file,y_file=os.path.basename(parsed_url_x.path), os.path.basename(parsed_url_y.path)
+        self.x_save_path,self.y_save_path=os.path.join(self.cache_path, x_file), os.path.join(self.cache_path, y_file)
+        try:
+            urlretrieve(self.x_url, self.x_save_path)
+            urlretrieve(self.y_url, self.y_save_path)
+            self.downloaded=True
+        except urllib.error.URLError as e:
+            print("Failed to download the file ",e)
+            self.downloaded=False
+    
+    def preprocess(self):
+        self.X=np.load(self.x_save_path)
+        self.y=np.load(self.y_save_path)
+    
+
+
+
+
+
 
 
 

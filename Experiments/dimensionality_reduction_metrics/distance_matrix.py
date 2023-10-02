@@ -13,7 +13,7 @@ def parse_arguments():
     parser.add_argument('--save_dir', '-s', help='Path to the directory where the distance matrices are saved', default='./distance_matrices')
     parser.add_argument('--datasets', '-d', nargs='+', help='List of names of the dataset (same name as the folder which contains .npy files)')
     # parser.add_argument('--sample_sizes', nargs='+', help='List of sample sizes of each dataset')
-    parser.add_argument('--data_dir', help='Directory of the dataset', default='./datasets')
+    parser.add_argument('--data_dir', help='Directory of the dataset', default='./normalized_data')
     args=parser.parse_args()
     return args
 
