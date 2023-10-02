@@ -69,7 +69,7 @@ def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_
     dist_matrix=get_shared_array('dist_matrix')
     if dr_technique=='PCA':
         if setting=='def':
-            Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_{dr_technique}.npy'))
+            Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_{dr_technique.lower()}.npy'))
         else:
             Z=np.load(os.path.join(EMBED_DIR, dataset, dr_technique, f'{dataset}_{target_dim}_{setting}.npy'))
         worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
