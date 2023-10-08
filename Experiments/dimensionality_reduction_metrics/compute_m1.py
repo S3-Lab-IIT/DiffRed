@@ -16,7 +16,7 @@ lock=Lock()
 
 def parse_arguments():
     parser=argparse.ArgumentParser(description='Compute M1 metric')
-    parser.add_argument('--save_dir','-s', help='Path to the directory where the results are to be saved', default='./results/m1_results')
+    parser.add_argument('--save_dir','-s', help='Path to the directory where the results are to be saved', default='./results/M1_results')
     parser.add_argument('--embed_dir','-e',help='Directory where embeddings are stored',default='./embeddings')
     parser.add_argument('--file_name', '-f', help='Name of the excel file where results are to be updated/File name of the excel file to be created', default='m1_results')
     parser.add_argument('--dataset','-d',help='Name of the dataset whose stress is to be computed')
