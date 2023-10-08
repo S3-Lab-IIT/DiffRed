@@ -19,6 +19,7 @@ def parse_arguments():
     parser.add_argument('--datasets','-d', nargs='+', help='Datasets whose plots are to be computed', default='all')
     parser.add_argument('--data_dir', help='Directory where datasets are stored', default='./normalized_data')
     parser.add_argument('--singular_dir', help='Directory to save singular values/Directory where singular values are saved', default='./norm_singular_values')
+    parser.add_argument('--clip_at', '-c', help='Value of k1 at which plot must be clipped', type=int, default=None)
 
     parser.add_argument('--all_in_one', type=bool, help='True if you want all plots in a single png', default=False)
 
@@ -64,26 +65,38 @@ def set_size(width, fraction=1):
     return fig_dim
 
 
-def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str):
+def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str, clip:int=None):
 
     sing_path=os.path.join(SING_DIR, f'{dataset}.npy')
 
-    if not os.path.exists(sing_path):
-        print(f'Singular values for {dataset} not computed')
-    else:
-        sigma=np.load(sing_path)
-        k1_vals=[x for x in range(len(sigma))]
-        stable_ranks=[]
+    if clip is None:
+        if not os.path.exists(sing_path):
+            print(f'Singular values for {dataset} not computed')
+        else:
+            sigma=np.load(sing_path)
+            k1_vals=[x for x in range(len(sigma))]
+            stable_ranks=[]
 
-        for k1 in k1_vals:
-            stable_ranks.append(stable_rank(sigma[k1:]))
-        
+            for k1 in k1_vals:
+                stable_ranks.append(stable_rank(sigma[k1:]))
+    else:
+        if not os.path.exists(sing_path):
+            print(f'Singular values for {dataset} not computed')
+        else:
+            sigma=np.load(sing_path)
+            k1_vals=[x for x in range(clip)]
+            stable_ranks=[]
+
+            for k1 in k1_vals:
+                stable_ranks.append(stable_rank(sigma[k1:]))
+    
     plt.plot(k1_vals, stable_ranks)
     plt.xlabel('k1')
     plt.ylabel('stable rank')
     plt.title(f'Stable rank vs k1 for {dataset}')
 
-    plt.savefig(os.path.join(SAVE_DIR, f'{dataset}.png'))
+    plt_name= f'{dataset}_clip={clip}.png' if not clip is None else f'{dataset}.png'
+    plt.savefig(os.path.join(SAVE_DIR, plt_name))
 
 def all_in_one(dataset:str, SAVE_DIR:str, SING_DIR:str):
     sing_path=os.path.join(SING_DIR, f'{dataset}.npy')
@@ -112,7 +125,7 @@ def main():
         num_cores=cpu_count()
         pool=Pool(processes=num_cores)
 
-        results=[pool.apply_async(plot_stable_rank, args=(dataset, args.save_dir, args.singular_dir)) for dataset in datasets]
+        results=[pool.apply_async(plot_stable_rank, args=(dataset, args.save_dir, args.singular_dir,args.clip_at)) for dataset in datasets]
 
         for result in results:
             result.wait()
@@ -125,7 +138,7 @@ def main():
         num_cores=cpu_count()
         pool=Pool(processes=num_cores)
 
-        results=[pool.apply_async(all_in_one, args=(dataset, args.save_dir, args.singular_dir)) for dataset in datasets]
+        results=[pool.apply_async(all_in_one, args=(dataset, args.save_dir, args.singular_dir,args.clip_at)) for dataset in datasets]
 
         for result in results:
             result.wait()

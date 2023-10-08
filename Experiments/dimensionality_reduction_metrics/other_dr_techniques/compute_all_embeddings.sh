@@ -1,9 +1,11 @@
 #!/bin/bash
-datasets="Cifar10 FMnist Reuters30k geneRNASeq"
+datasets="Cifar10 FMnist Reuters30k geneRNASeq hatespeech"
+
 algorithms="UMap T-SNE S-PCA K-PCA"
 
 
-common_t_value="10 20 30 40 50"
+# common_t_value="10 20 30 40 50"
+common_t_value="10 20 30 40"
 
 datetime=$(date +"%Y%m%d_%H%M%S")
 # log_file="./logs/log_${datetime}.txt"

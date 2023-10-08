@@ -1,9 +1,10 @@
 #!/bin/bash
-datasets="Bank Cifar10 FMnist Reuters30k geneRNASeq"
-# datasets="FMnist"
+datasets="Bank Cifar10 FMnist Reuters30k geneRNASeq hatespeech"
+
 algorithms="UMap T-SNE S-PCA K-PCA"
 
-common_t_value="10 20 30 40 50"
+# common_t_value="10 20 30 40 50"
+common_t_value="10 20 30 40"
 bank_t_value="1 2 3 5 6 7 8 10"
 
 save_dir="../results/other_dr_techniques/"
@@ -12,7 +13,7 @@ embed_dir="./embeddings/"
 total_iterations=$(( ${#datasets[@]} * ${#algorithms[@]} ))
 
 update_progress_description() {
-    echo -ne "\rComputing Stress $1 $2..."
+    echo -ne "Computing Stress $1 $2..."
 }
 
 for dataset in $datasets; do

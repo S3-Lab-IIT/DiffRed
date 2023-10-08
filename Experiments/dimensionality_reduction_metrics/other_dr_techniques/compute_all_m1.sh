@@ -1,10 +1,11 @@
 #!/bin/bash
 
-datasets="Bank Cifar10 FMnist Reuters30k geneRNASeq"
+# datasets="Bank Cifar10 FMnist Reuters30k geneRNASeq"
+datasets="hatespeech"
 
 algorithms="PCA UMap T-SNE S-PCA K-PCA"
 
-common_t_value="10 20 30 40 50"
+common_t_value="10 20 30 40"
 bank_t_value="1 2 3 5 6 7 8 10"
 
 save_dir="../results/other_dr_techniques/"
