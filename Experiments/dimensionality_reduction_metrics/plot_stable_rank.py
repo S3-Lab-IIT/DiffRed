@@ -23,6 +23,8 @@ def parse_arguments():
 
     parser.add_argument('--all_in_one', type=bool, help='True if you want all plots in a single png', default=False)
 
+    parser.add_argument('--file_name', '-f', help='Name with which the plot is to be saved', default=None)
+
     args=parser.parse_args()
 
     return args
@@ -65,7 +67,7 @@ def set_size(width, fraction=1):
     return fig_dim
 
 
-def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str, clip:int=None):
+def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str,file_name:str, clip:int=None):
 
     sing_path=os.path.join(SING_DIR, f'{dataset}.npy')
 
@@ -80,10 +82,13 @@ def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str, clip:int=None):
             for k1 in k1_vals:
                 stable_ranks.append(stable_rank(sigma[k1:]))
     else:
+
+        
         if not os.path.exists(sing_path):
             print(f'Singular values for {dataset} not computed')
         else:
             sigma=np.load(sing_path)
+            clip=min(len(sigma),clip)
             k1_vals=[x for x in range(clip)]
             stable_ranks=[]
 
@@ -95,22 +100,39 @@ def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str, clip:int=None):
     plt.ylabel('stable rank')
     plt.title(f'Stable rank vs k1 for {dataset}')
 
-    plt_name= f'{dataset}_clip={clip}.png' if not clip is None else f'{dataset}.png'
-    plt.savefig(os.path.join(SAVE_DIR, plt_name))
+    if file_name is None:
+        plt_name= f'{dataset}_clip={clip}.png' if not clip is None else f'{dataset}.png'
+        plt.savefig(os.path.join(SAVE_DIR, plt_name))
+    else:
+        plt.savefig(os.path.join(SAVE_DIR,f'{file_name}.png'))
 
-def all_in_one(dataset:str, SAVE_DIR:str, SING_DIR:str):
+def all_in_one(dataset:str, SAVE_DIR:str, SING_DIR:str, clip:int=None):
     sing_path=os.path.join(SING_DIR, f'{dataset}.npy')
 
-    if not os.path.exists(sing_path):
-        print(f'Singular values for {dataset} not computed')
-    else:
-        sigma=np.load(sing_path)
-        k1_vals=[x for x in range(len(sigma))]
-        stable_ranks=[]
+    if clip is None:
+        if not os.path.exists(sing_path):
+            print(f'Singular values for {dataset} not computed')
+        else:
+            sigma=np.load(sing_path)
+            k1_vals=[x for x in range(len(sigma))]
+            stable_ranks=[]
 
-        for k1 in k1_vals:
-            stable_ranks.append(stable_rank(sigma[k1:]))
-    return k1_vals, stable_ranks
+            for k1 in k1_vals:
+                stable_ranks.append(stable_rank(sigma[k1:]))
+            return k1_vals, stable_ranks
+    else:
+        if not os.path.exists(sing_path):
+            print(f'Singular values for {dataset} not computed')
+        else:
+            sigma=np.load(sing_path)
+            clip=min(len(sigma),clip)
+            k1_vals=[x for x in range(clip)]
+            stable_ranks=[]
+
+            for k1 in k1_vals:
+                stable_ranks.append(stable_rank(sigma[k1:]))
+            return k1_vals, stable_ranks
+
 
 def main():
 
@@ -125,7 +147,7 @@ def main():
         num_cores=cpu_count()
         pool=Pool(processes=num_cores)
 
-        results=[pool.apply_async(plot_stable_rank, args=(dataset, args.save_dir, args.singular_dir,args.clip_at)) for dataset in datasets]
+        results=[pool.apply_async(plot_stable_rank, args=(dataset, args.save_dir, args.singular_dir,args.clip_at, args.file_name)) for dataset in datasets]
 
         for result in results:
             result.wait()
@@ -151,7 +173,7 @@ def main():
             plot_data[datasets[i]]=(k1_vals, stable_ranks)
         
         cols=2
-        rows= len(datasets)/2 if len(datasets)%2==0 else len(datasets)//2 +1
+        rows= int(len(datasets)/2) if len(datasets)%2==0 else len(datasets)//2 +1
 
         fig, axes= plt.subplots(rows, cols, figsize=(5,6))
         for i, dataset_name in enumerate(datasets):
@@ -193,14 +215,11 @@ def main():
         plt.suptitle(r'Stable rank ($\rho$) vs $k1$')
         plt.subplots_adjust(top=0.85)
         
-        plt.savefig(os.path.join(args.save_dir, 'all_in_one.png'))
+        if args.file_name is None:
+            plt.savefig(os.path.join(args.save_dir, 'all_in_one.png'))
+        else:
+            plt.savefig(os.path.join(args.save_dir, f'{args.file_name}.png'))
                 
-
-
-
-
-
-
 if __name__=="__main__":
     main()
 
