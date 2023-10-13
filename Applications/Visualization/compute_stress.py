@@ -65,13 +65,18 @@ def compute_stress(dataset:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:in
     
     if dr_tech=='DiffRed':
         EMBED_DIR=os.path.join(EMBED_DIR, 'DiffRed')
-        Z= np.load(os.path.join(EMBED_DIR,dataset, f'{dataset}_{target_dim}_{k1}_{k2}'))
+        Z= np.load(os.path.join(EMBED_DIR,dataset, f'{dataset}_{target_dim}_{k1}_{k2}.npy'))
         worker_desc=f'{dataset}({k1},{k2})'
 
     
         stress_val=stress(dist_matrix,Z,worker_desc,worker_id)
         
         lock.acquire()
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech))
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech, dataset)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech, dataset))
+        SAVE_DIR=os.path.join(SAVE_DIR, dr_tech, dataset)
         if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
 
             column_names=['Timestamp', 'Dataset','Max_iter','Target Dimension', 'k1', 'k2', 'Stress' ]
@@ -97,8 +102,12 @@ def compute_stress(dataset:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:in
 
     
         stress_val=stress(dist_matrix,Z,worker_desc,worker_id)
-        
         lock.acquire()
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech))
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech, dataset)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech, dataset))
+        SAVE_DIR=os.path.join(SAVE_DIR, dr_tech, dataset)
         if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
 
             if dr_tech=='DiffRed':
@@ -174,7 +183,7 @@ def main():
                 max_iter=[int(args.max_iter[0]) for x in range(len(k1))]
             dr_args=list(zip(k1,k2,max_iter))
 
-            results=[pool.apply_async(compute_stress, args=(args.dataset,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i, args.dr_tech, target_dims[i])) for i in range(len(dr_args))]
+            results=[pool.apply(compute_stress, args=(args.dataset,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i, args.dr_tech, target_dims[i])) for i in range(len(dr_args))]
         else:
             results=[pool.apply_async(compute_stress, args=(args.dataset,args.save_dir,args.embed_dir,args.file_name,None,None,None,i, args.dr_tech, target_dims[i])) for i in range(len(target_dims))]
 
