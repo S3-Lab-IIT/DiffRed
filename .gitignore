@@ -43,4 +43,6 @@ Experiments/dimensionality_reduction_metrics/test.xlsx
 kaggle.json
 .vscode/*
 .conda/*
- DiffRed/__pycache__/*
+DiffRed/__pycache__/*
+__pycache__/*
+
