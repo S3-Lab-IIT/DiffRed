@@ -33,7 +33,7 @@ Experiments/high_dimensionality_datasets/embeddings/
 Experiments/high_dimensionality_datasets/pca_embeddings/
 Experiments/high_dimensionality_datasets/rmap_embeddings/
 # Experiments/high_dimensionality_datasets/__pycache__/
-Applications/visualization/rough.ipynb
+Applications/Visualization/rough.ipynb
 Applications/Autoencoder/rough.ipynb
 Applications/Autoencoder/rough\ copy.ipynb
 .ipynb_checkpoints/
@@ -45,4 +45,4 @@ kaggle.json
 .conda/*
 # DiffRed/__pycache__/*
 **/__pycache__/
-
+Applications/Visualization/tsne_embeddings/
