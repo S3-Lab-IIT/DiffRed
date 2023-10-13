@@ -10,6 +10,8 @@ from tqdm import tqdm
 from multiprocessing import cpu_count,Pool, Lock
 from share_array.share_array import get_shared_array, make_shared_array
 import sys
+sys.path.append('../../')
+from parallel_stress import stress as pstress
 
 lock=Lock()
 
@@ -32,8 +34,8 @@ def parse_arguments():
     parser.add_argument('--max_iter_list', help='True if max_iter is a list. If false then the single value provided is assumed to be for all the target dimensions.', default='True')
     parser.add_argument('--target_dims', '-t', help='List of target dimensions seperated by space', nargs='+', default='na')
     parser.add_argument('--dr_tech', help='DR Technique whose stress is to be calculated', default='DiffRed', choices=['DiffRed', 'PCA'])
+    parser.add_argument('--use_parallel_stress', '-u', help='Use memoized embeddings (T) or compute fresh(F)', default='False', choices=['True', 'False'])
 
-    parser.add_argument('--use_memoized_embeddings', '-u', type=bool, help='Use memoized embeddings (T) or compute fresh(F)', default=True)
 
     args=parser.parse_args()
     return args
@@ -62,7 +64,6 @@ def compute_stress(dataset:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:in
     global lock
     # dist_matrix= np.load(os.path.join(DIST_DIR,f'{dataset}.npy'))
     dist_matrix=get_shared_array('dist_matrix')
-    
     if dr_tech=='DiffRed':
         EMBED_DIR=os.path.join(EMBED_DIR, 'DiffRed')
         Z= np.load(os.path.join(EMBED_DIR,dataset, f'{dataset}_{target_dim}_{k1}_{k2}.npy'))
@@ -128,34 +129,72 @@ def compute_stress(dataset:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:in
 
         result_sheet.to_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'), index=False)
         lock.release()
-    # elif dr_tech=='RMap':
-    #     alpha=int(dr_args)
 
-    #     for i in range(alpha):
-    #         Z=np.load(os.path.join(EMBED_DIR, dataset, str(target_dim), f'{i}.npy'))
-    #         worker_desc=f'{dataset}_{dr_tech}_{target_dim}'
-    #         stress_val=stress(dist_matrix, Z, worker_desc, worker_id*i)
-    #         lock.acquire()
-    #         if not os.path.exists(os.path.join(SAVE_DIR, dataset)):
-    #             os.mkdir(os.path.join(SAVE_DIR, dataset))
-    #         if not os.path.exists(os.path.join(SAVE_DIR, dataset,f'{file_name}_{target_dim}.xlsx')):
-
-    #             column_names=['Timestamp', 'Dataset', 'Target Dimension', 'Instance', 'Stress']
-
-    #             df=pd.DataFrame(columns=column_names)
-    #             df.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
-            
-    #         new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, target_dim, i, stress_val]
-    #         result_sheet=pd.read_excel(os.path.join(SAVE_DIR, dataset, f'{file_name}_{target_dim}.xlsx'))
-
-    #         result_sheet.loc[len(result_sheet.index)]=new_row
-    #         result_sheet.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
-    #         lock.release()
-   
+def compute_pstress(dataset:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str,k1:int, k2:int, max_iter:int, worker_id:int, dr_tech:str, target_dim:int):
+    # dist_matrix= np.load(os.path.join(DIST_DIR,f'{dataset}.npy'))
     
+    if dr_tech=='DiffRed':
+        EMBED_DIR=os.path.join(EMBED_DIR, 'DiffRed')
+        Z= np.load(os.path.join(EMBED_DIR,dataset, f'{dataset}_{target_dim}_{k1}_{k2}.npy'))
+        worker_desc=f'{dataset}({k1},{k2})'
+
+        make_shared_array(Z, name='embedding')
+        del Z
+        stress_val=pstress('dist_matrix', 'embedding')
+
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech))
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech, dataset)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech, dataset))
+        SAVE_DIR=os.path.join(SAVE_DIR, dr_tech, dataset)
+        if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+
+            column_names=['Timestamp', 'Dataset','Max_iter','Target Dimension', 'k1', 'k2', 'Stress' ]
+
+            df=pd.DataFrame(columns=column_names)
+            df.to_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'), index=False)
+        
+
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,max_iter,k1+k2,k1,k2,stress_val]
+        # else:
+        #     new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,dr_tech,target_dim,stress_val]
+
+        result_sheet=pd.read_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+
+        result_sheet.to_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'), index=False)
+    
+    elif dr_tech=='PCA':
+        EMBED_DIR=os.path.join(EMBED_DIR, dr_tech)
+        Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}.npy'))
+
+        make_shared_array(Z,name='embedding')
+        stress_val=pstress('dist_matrix','embedding')
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech))
+        if not os.path.exists(os.path.join(SAVE_DIR, dr_tech, dataset)):
+            os.mkdir(os.path.join(SAVE_DIR, dr_tech, dataset))
+        SAVE_DIR=os.path.join(SAVE_DIR, dr_tech, dataset)
+        if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+
+            if dr_tech=='DiffRed':
+                column_names=['Timestamp', 'Dataset','Max_iter','Target Dimension', 'k1', 'k2', 'Stress' ]
+            else:
+                column_names=['Timestamp', 'Dataset', 'DR Technique','Target Dimension', 'Stress' ]
 
 
+            df=pd.DataFrame(columns=column_names)
+            df.to_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'), index=False)
+        
 
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),dataset,dr_tech,target_dim,stress_val]
+
+        result_sheet=pd.read_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+
+        result_sheet.to_excel(os.path.join(SAVE_DIR, f'{file_name}.xlsx'), index=False)
 
 def main():
 
@@ -165,9 +204,10 @@ def main():
 
     dist_matrix= np.load(os.path.join(args.dist_dir,f'{args.dataset}.npy'))
     make_shared_array(dist_matrix,name='dist_matrix')
+    del dist_matrix
 
     # lock=Lock()
-    if args.use_memoized_embeddings:
+    if args.use_parallel_stress=='False':
         target_dims=[int(x) for x in args.target_dims]
         # for arg in dr_args:
         #     compute_stress(args.dataset,args.dist_dir,args.save_dir,args.embed_dir,args.file_name,arg[0],arg[1],arg[2])
@@ -183,7 +223,7 @@ def main():
                 max_iter=[int(args.max_iter[0]) for x in range(len(k1))]
             dr_args=list(zip(k1,k2,max_iter))
 
-            results=[pool.apply(compute_stress, args=(args.dataset,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i, args.dr_tech, target_dims[i])) for i in range(len(dr_args))]
+            results=[pool.apply_async(compute_stress, args=(args.dataset,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i, args.dr_tech, target_dims[i])) for i in range(len(dr_args))]
         else:
             results=[pool.apply_async(compute_stress, args=(args.dataset,args.save_dir,args.embed_dir,args.file_name,None,None,None,i, args.dr_tech, target_dims[i])) for i in range(len(target_dims))]
 
@@ -193,7 +233,23 @@ def main():
         pool.close()
         pool.join()
     else:
-        print('Code for this part has not been written yet')
+        target_dims=[int(x) for x in args.target_dims]
+
+        if args.dr_tech=='DiffRed':
+            k1=[int(x) for x in args.k1]
+            k2=[target_dims[x]-k1[x] for x in range(len(target_dims))]
+            if args.max_iter_list=='True':
+                max_iter=[int(x) for x in args.max_iter]
+            else:
+                max_iter=[int(args.max_iter[0]) for x in range(len(k1))]
+            dr_args=list(zip(k1,k2,max_iter))
+            for i in tqdm(range(len(dr_args)), desc=f'Computing stress: {args.dataset}...'):
+                compute_pstress(args.dataset,args.save_dir,args.embed_dir,args.file_name,dr_args[i][0],dr_args[i][1],dr_args[i][2],i, args.dr_tech, target_dims[i])
+        else:
+
+            for i in tqdm(range(len(target_dims)), desc=f'Computing stress: {args.dataset}...'):
+
+                compute_pstress(args.dataset,args.save_dir,args.embed_dir,args.file_name,None,None,None,i, args.dr_tech, target_dims[i])
 
 if __name__=="__main__":
     main()
