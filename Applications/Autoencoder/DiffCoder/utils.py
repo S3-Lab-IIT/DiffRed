@@ -30,8 +30,8 @@ def inverse_scale(scaler:StandardScaler, B:np.ndarray):
     X=X.T
     return X
 
-def load_dataset(save_dir:str,dataset:str):
-    X=np.load(os.path.join(save_dir, dataset, 'X.npy'))
+def load_dataset(data_dir:str,dataset:str):
+    X=np.load(os.path.join(data_dir, dataset, 'X.npy'))
     return X
 
 def mse(A:np.ndarray, A_res:np.ndarray):
