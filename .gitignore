@@ -34,9 +34,13 @@ Experiments/high_dimensionality_datasets/pca_embeddings/
 Experiments/high_dimensionality_datasets/rmap_embeddings/
 Experiments/high_dimensionality_datasets/__pycache__/
 Applications/visualization/rough.ipynb
+Applications/Autoencoder/rough.ipynb
+Applications/Autoencoder/rough\ copy.ipynb
+.ipynb_checkpoints/
 Experiments/dimensionality_reduction_metrics/__pycache__/*
 Experiments/dimensionality_reduction_metrics/__pycache__/*
 Experiments/dimensionality_reduction_metrics/test.xlsx
 kaggle.json
 .vscode/*
 .conda/*
+ DiffRed/__pycache__/*
