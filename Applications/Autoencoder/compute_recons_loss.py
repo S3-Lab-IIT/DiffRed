@@ -3,8 +3,10 @@ from multiprocessing import Pool, cpu_count, Lock
 import pandas as pd
 from datetime import datetime
 import os
+from openpyxl import load_workbook
 from DiffCoder import DiffCoder
 from DiffCoder.utils import load_dataset, mse
+from pca_ae import pca_ae
 
 
 lock=Lock()
@@ -38,26 +40,48 @@ def calculate_mse(dataset:str, ae:str, data_dir:str, target_dim:int, save_dir:st
         metric=mse(A,A_res)
 
         lock.acquire()
-        # if not os.path.exists(os.path.join(save_dir, dataset)):
-        #     os.mkdir(os.path.join(save_dir, dataset))
+        if not os.path.exists(os.path.join(save_dir, dataset)):
+            os.mkdir(os.path.join(save_dir, dataset))
         columns=['Timestamp', 'Autoencoder', 'Dataset', 'Target Dimension','k1','k2','MSE Reconstruction Loss']
-        if not os.path.exists(os.path.join(save_dir, f'{file_name}.xlsx')):
+        if not os.path.exists(os.path.join(save_dir, dataset,f'{file_name}.xlsx')):
             df=pd.DataFrame(columns=columns)
-            df.to_excel(os.path.join(save_dir,f'{file_name}.xlsx'), index=False, sheet_name=dataset)
+            df.to_excel(os.path.join(save_dir,dataset,f'{file_name}.xlsx'), index=False)
         
-        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),ae,dataset, target_dim,k1,target_dim-k1,metric]
-        excel=pd.ExcelFile(os.path.join(save_dir, f'{file_name}.xlsx'))
-        if dataset not in excel.sheet_names:
-            df=pd.DataFrame(columns=columns)
-
-            with pd.ExcelWriter(excel,mode='a', engine='openpyxl') as writer:
-                df.to_excel(writer, sheet_name=dataset,index=False)
-        
-        result_sheet=pd.read_excel(os.path.join(save_dir, f'{file_name}.xlsx'),sheet_name=dataset)
+                
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),ae,dataset, target_dim,k1,target_dim-k1,metric]    
+        result_sheet=pd.read_excel(os.path.join(save_dir,dataset, f'{file_name}.xlsx'))
 
         result_sheet.loc[len(result_sheet.index)]=new_row
-        result_sheet.to_excel(os.path.join(save_dir, f'{file_name}.xlsx'), index=False, sheet_name=dataset)
+        result_sheet.to_excel(os.path.join(save_dir, dataset, f'{file_name}.xlsx'), index=False)
         lock.release()
+    
+    elif ae=='PCA':
+        A=load_dataset(data_dir, dataset)
+        AE=pca_ae(target_dim)
+
+        A_res=AE.reconstruct(A)
+
+        metric=mse(A,A_res)
+        lock.acquire()
+        if not os.path.exists(os.path.join(save_dir, dataset)):
+            os.mkdir(os.path.join(save_dir, dataset))
+        columns=['Timestamp', 'Autoencoder', 'Dataset', 'Target Dimension','MSE Reconstruction Loss']
+        if not os.path.exists(os.path.join(save_dir, dataset, f'{file_name}.xlsx')):
+            df=pd.DataFrame(columns=columns)
+            df.to_excel(os.path.join(save_dir,dataset,f'{file_name}.xlsx'), index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"),ae,dataset, target_dim,metric]
+        
+        result_sheet=pd.read_excel(os.path.join(save_dir,dataset, f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+        result_sheet.to_excel(os.path.join(save_dir,dataset, f'{file_name}.xlsx'), index=False)
+        lock.release()
+    elif ae=='NN':
+        pass
+
+    else:
+        print("Choose the correct autoencoder")
 
 
 def main():
@@ -68,7 +92,7 @@ def main():
 
     if args.ae=='DiffCoder':
         k1=[int(x) for x in args.k1]
-        results=[pool.apply(calculate_mse, args=(args.dataset, args.ae, args.data_dir, target_dims[i], args.save_dir, args.file_name,k1[i])) for i in range(len(target_dims))]
+        results=[pool.apply_async(calculate_mse, args=(args.dataset, args.ae, args.data_dir, target_dims[i], args.save_dir, args.file_name,k1[i])) for i in range(len(target_dims))]
     else:
         results=[pool.apply_async(calculate_mse, args=(args.dataset, args.ae, args.data_dir, target_dims[i], args.save_dir, args.file_name,None)) for i in range(len(target_dims))]
     
