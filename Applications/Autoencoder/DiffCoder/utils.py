@@ -10,7 +10,8 @@ from sklearn.preprocessing import StandardScaler, normalize
 import math as m
 
 def pseudoinverse(A:np.ndarray):
-    return (LA.inv(A.T@A))@A.T
+    # return (LA.inv(A.T@A))@A.T
+    return LA.pinv(A)
 
 
 def scale_data(X:np.ndarray)->tuple[StandardScaler, np.ndarray]:

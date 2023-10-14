@@ -46,3 +46,4 @@ kaggle.json
 # DiffRed/__pycache__/*
 **/__pycache__/
 Applications/Visualization/tsne_embeddings/
+Applications/Autoencoder/results/Reuters30k/Reuters_new_DiffCoder.xlsx
