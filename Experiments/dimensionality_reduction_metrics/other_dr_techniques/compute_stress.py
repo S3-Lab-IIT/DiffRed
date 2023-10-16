@@ -11,7 +11,9 @@ from multiprocessing import cpu_count,Pool, Lock
 from share_array.share_array import get_shared_array, make_shared_array
 from itertools import product
 from settings import SETTINGS
-
+import sys
+sys.path.append('../../../')
+from parallel_stress import stress as pstress
 lock=Lock()
 
 def parse_arguments():
@@ -28,7 +30,7 @@ def parse_arguments():
     parser.add_argument('--setting', help='Which setting is being used', default='def')
     parser.add_argument('--dr_args', help='Arguments of the dr technique', default=None)
     parser.add_argument('--target_dims', help='List of target dimension values', nargs='+')
-
+    parser.add_argument('--use_parallel_stress', '-u', help='Use memoized embeddings (T) or compute fresh(F)', default='False', choices=['True', 'False'])
 
     args=parser.parse_args()
     return args
@@ -142,6 +144,89 @@ def compute_stress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_
         lock.release()
 
 
+def compute_pstress(dataset:str, DIST_DIR:str, SAVE_DIR:str, EMBED_DIR:str, file_name:str, worker_id:int, target_dim:int,dr_technique:str,setting:str, dr_args:str):
+
+    global lock
+    # dist_matrix=get_shared_array('dist_matrix')
+    if dr_technique=='PCA':
+        if setting=='def':
+            Z=np.load(os.path.join(EMBED_DIR, dataset, f'{dataset}_{target_dim}_{dr_technique.lower()}.npy'))
+        else:
+            Z=np.load(os.path.join(EMBED_DIR, dataset, dr_technique, f'{dataset}_{target_dim}_{setting}.npy'))
+        worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
+
+        make_shared_array(Z,name='embedding')
+        del Z
+        stress_val=pstress('dist_matrix', 'embedding')
+
+        
+        lock.acquire()
+        if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+
+            column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'Stress']
+
+            df=pd.DataFrame(columns=column_names)
+            df.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, setting, target_dim,stress_val]
+        result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+        result_sheet.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        lock.release()
+    elif dr_technique=='RMap':
+        eta=int(dr_args)
+
+        for i in range(eta):
+            Z=np.load(os.path.join(EMBED_DIR, dataset, str(target_dim), f'{i}.npy'))
+            make_shared_array(Z, name='embedding')
+            del Z
+            worker_desc=f'{dataset}_{dr_technique}_{target_dim}'
+            stress_val=pstress('dist_matrix', 'embedding')
+            lock.acquire()
+            if not os.path.exists(os.path.join(SAVE_DIR, dataset)):
+                os.mkdir(os.path.join(SAVE_DIR, dataset))
+            if not os.path.exists(os.path.join(SAVE_DIR, dataset,f'{file_name}_{target_dim}.xlsx')):
+
+                column_names=['Timestamp', 'Dataset', 'Target Dimension', 'Instance', 'Stress']
+
+                df=pd.DataFrame(columns=column_names)
+                df.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
+            
+            new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, target_dim, i, stress_val]
+            result_sheet=pd.read_excel(os.path.join(SAVE_DIR, dataset, f'{file_name}_{target_dim}.xlsx'))
+
+            result_sheet.loc[len(result_sheet.index)]=new_row
+            result_sheet.to_excel(os.path.join(SAVE_DIR,dataset,f'{file_name}_{target_dim}.xlsx'), index=False)
+            lock.release()
+
+
+
+    else:
+        Z=np.load(os.path.join(EMBED_DIR,dataset,dr_technique,f'{dataset}_{target_dim}_{setting}.npy'))
+    
+        make_shared_array(Z, name='embedding')
+        del Z
+        worker_desc=f'{dataset}_{dr_technique}_{setting}_{target_dim}'
+
+        stress_val=pstress('dist_matrix', 'embedding')
+        
+        lock.acquire()
+        if not os.path.exists(os.path.join(SAVE_DIR,f'{file_name}.xlsx')):
+
+            column_names=['Timestamp', 'Dataset', 'Setting', 'Target Dimension', 'Stress']
+
+            df=pd.DataFrame(columns=column_names)
+            df.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        
+        new_row=[datetime.now().strftime("%Y-%m-%d %H:%M:%S"), dataset, setting, target_dim,stress_val]
+        result_sheet=pd.read_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'))
+
+        result_sheet.loc[len(result_sheet.index)]=new_row
+        result_sheet.to_excel(os.path.join(SAVE_DIR,f'{file_name}.xlsx'), index=False)
+        lock.release()
+
+
 def main():
 
     args=parse_arguments()
@@ -151,24 +236,37 @@ def main():
 
     make_shared_array(dist_matrix,'dist_matrix')
 
-    num_cores=cpu_count()
-    pool=Pool(processes=num_cores)
+    if args.use_parallel_stress=='False':
+        num_cores=cpu_count()
+        pool=Pool(processes=num_cores)
 
-    if not args.setting=='all':
+        if not args.setting=='all':
 
-        results=[pool.apply_async(compute_stress, args=(args.dataset, args.dist_dir,args.save_dir, args.embed_dir, args.file_name,i, target_dims[i], args.dr_tech, args.setting, args.dr_args)) for i in range(len(target_dims))]
+            results=[pool.apply_async(compute_stress, args=(args.dataset, args.dist_dir,args.save_dir, args.embed_dir, args.file_name,i, target_dims[i], args.dr_tech, args.setting, args.dr_args)) for i in range(len(target_dims))]
+        else:
+
+            all_settings=[k for k in SETTINGS[args.dr_tech].keys()]
+            combinations=product(target_dims, all_settings)
+
+            results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir, args.save_dir, args.embed_dir, args.file_name, i ,target_dim, args.dr_tech, setting, args.dr_args)) for i, (target_dim, setting) in enumerate(combinations)]
+
+        # for result in results:
+        #     result.wait()
+        
+        pool.close()
+        pool.join()
     else:
+        if not args.setting=='all':
+            for i in tqdm(range(len(target_dims)), desc=f'Computing stress...{args.dataset}'):
+                compute_pstress(args.dataset,args.dist_dir,args.save_dir,args.embed_dir,args.file_name,i,target_dims[i], args.dr_tech, args.setting,args.dr_args)
+        else:
 
-        all_settings=[k for k in SETTINGS[args.dr_tech].keys()]
-        combinations=product(target_dims, all_settings)
+            all_settings=[k for k in SETTINGS[args.dr_tech].keys()]
+            combinations=product(target_dims,all_settings)
 
-        results=[pool.apply_async(compute_stress, args=(args.dataset,args.dist_dir, args.save_dir, args.embed_dir, args.file_name, i ,target_dim, args.dr_tech, setting, args.dr_args)) for i, (target_dim, setting) in enumerate(combinations)]
+            for i,(target_dim, setting) in tqdm(enumerate(combinations), desc=f'Computing stress ...{args.dataset}'):
+                compute_pstress(args.dataset, args.dist_dir, args.save_dir, args.embed_dir, args.file_name, i,target_dim,args.dr_tech,setting,args.dr_args)
 
-    # for result in results:
-    #     result.wait()
-    
-    pool.close()
-    pool.join()
 
 if __name__=="__main__":
     main()
