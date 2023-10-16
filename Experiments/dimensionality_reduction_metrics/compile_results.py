@@ -21,7 +21,7 @@ def parse_arguments():
 
     parser.add_argument('--other_res', '-o', help='Directory where results of other dr techniques are stored', default='./results/other_dr_techniques/')
 
-    parser.add_argument('--dr_tech', help='Which dr technique to compile', choices=['PCA', 'RMap', 'K-PCA', 'S-PCA', 'UMap', 'T-SNE', 'DiffRed', 'all'], default='all')
+    parser.add_argument('--dr_tech', help='Which dr technique to compile', choices=['PCA', 'RMap', 'K-PCA', 'S-PCA', 'UMap', 'T-SNE', 'DiffRed', 'UMap2', 'all'], default='all')
 
     parser.add_argument('--save_dir', help='Directory where results are to be saved', default='./results/compiled_results/')
 
@@ -107,7 +107,7 @@ def main():
         compile(args.metric,args.result_dir, args.other_res,args.save_dir,args.dataset,args.setting,args.dr_tech, target_dims)
     else:
 
-        dr_techs=['PCA', 'RMap', 'K-PCA', 'S-PCA', 'UMap', 'T-SNE', 'DiffRed']
+        dr_techs=['PCA', 'RMap', 'K-PCA', 'S-PCA', 'UMap', 'T-SNE', 'DiffRed', 'UMap2']
 
         for dr_tech in dr_techs:
             compile(args.metric,args.result_dir, args.other_res,args.save_dir,args.dataset,args.setting,dr_tech, target_dims)
