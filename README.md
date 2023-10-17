@@ -1,4 +1,4 @@
-# DiffRed: Combining PCA and Random Maps for Dimensionality Reduction to achieve tighter bounds on Distortion
+# DiffRed: Dimensionality Reduction guided by stable rank
 
 This repo contains the python package for DiffRed implmentation as well as the code for all the experiments in the paper. 
 

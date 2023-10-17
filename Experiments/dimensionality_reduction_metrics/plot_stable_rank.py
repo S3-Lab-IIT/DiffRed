@@ -174,51 +174,97 @@ def main():
         
         cols=2
         rows= int(len(datasets)/2) if len(datasets)%2==0 else len(datasets)//2 +1
+        if len(datasets)==2:
+            
+            fig, axes= plt.subplots(rows, cols, figsize=(5,6))
+            for i, dataset_name in enumerate(datasets):
+                row = i // cols
+                col = i % cols
+                x, y = plot_data[dataset_name]
 
-        fig, axes= plt.subplots(rows, cols, figsize=(5,6))
-        for i, dataset_name in enumerate(datasets):
-            row = i // cols
-            col = i % cols
-            x, y = plot_data[dataset_name]
+                ax = axes[col]
+                ax.plot(x, y)
+                # max_y = max(y)
+                # max_x = x[y.index(max_y)]
 
-            ax = axes[row, col]
-            ax.plot(x, y)
-            # max_y = max(y)
-            # max_x = x[y.index(max_y)]
-
-            # Annotate the maximum value
-            # ax.annotate(
-            #     f"Max:({max_x:.2f}, {max_y:.2f})",
-            #     xy=(max_x, max_y),
-            #     xytext=(max_x, max_y + 0.1),  # Adjust text position for visibility
-            #     ha='left',
-            #     fontsize=8,
-            # )
-            ax.set_xlim(min(x), 1.2*max(x))
-            ax.set_ylim(min(y), 1.5*max(y))
-            ymax = max(y)
-            xmax= x[y.index(ymax)]
-            text= "x={:.3f}, y={:.3f}".format(xmax, ymax)
-            if not ax:
-                ax=plt.gca()
-            bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
-            arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
-            kw = dict(xycoords='data',textcoords="axes fraction",
-                    arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
-            ax.annotate(text, xy=(xmax, ymax), xytext=(0.94,0.96), **kw)
-            ax.set_xlabel('$k_1$')
-            ax.set_ylabel(r'$\rho$')
-            ax.set_title(dataset_name)
-        fig.tight_layout()
-        for i in range(len(datasets), rows * cols):
-            fig.delaxes(axes.flatten()[i])
-        plt.suptitle(r'Stable rank ($\rho$) vs $k1$')
-        plt.subplots_adjust(top=0.85)
-        
-        if args.file_name is None:
-            plt.savefig(os.path.join(args.save_dir, 'all_in_one.png'))
+                # Annotate the maximum value
+                # ax.annotate(
+                #     f"Max:({max_x:.2f}, {max_y:.2f})",
+                #     xy=(max_x, max_y),
+                #     xytext=(max_x, max_y + 0.1),  # Adjust text position for visibility
+                #     ha='left',
+                #     fontsize=8,
+                # )
+                ax.set_xlim(min(x), 1.2*max(x))
+                ax.set_ylim(min(y), 1.5*max(y))
+                ymax = max(y)
+                xmax= x[y.index(ymax)]
+                text= "x={:.3f}, y={:.3f}".format(xmax, ymax)
+                if not ax:
+                    ax=plt.gca()
+                bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+                arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
+                kw = dict(xycoords='data',textcoords="axes fraction",
+                        arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
+                ax.annotate(text, xy=(xmax, ymax), xytext=(0.94,0.96), **kw)
+                ax.set_xlabel('$k_1$')
+                ax.set_ylabel(r'$\rho$')
+                ax.set_title(dataset_name)
+            fig.tight_layout()
+            for i in range(len(datasets), rows * cols):
+                fig.delaxes(axes.flatten()[i])
+            plt.suptitle(r'Stable rank ($\rho$) vs $k1$')
+            plt.subplots_adjust(top=0.85)
+            
+            if args.file_name is None:
+                plt.savefig(os.path.join(args.save_dir, 'all_in_one.png'))
+            else:
+                plt.savefig(os.path.join(args.save_dir, f'{args.file_name}.png'))
         else:
-            plt.savefig(os.path.join(args.save_dir, f'{args.file_name}.png'))
+            fig, axes= plt.subplots(rows, cols, figsize=(5,6))
+            for i, dataset_name in enumerate(datasets):
+                row = i // cols
+                col = i % cols
+                x, y = plot_data[dataset_name]
+
+                ax = axes[row, col]
+                ax.plot(x, y)
+                # max_y = max(y)
+                # max_x = x[y.index(max_y)]
+
+                # Annotate the maximum value
+                # ax.annotate(
+                #     f"Max:({max_x:.2f}, {max_y:.2f})",
+                #     xy=(max_x, max_y),
+                #     xytext=(max_x, max_y + 0.1),  # Adjust text position for visibility
+                #     ha='left',
+                #     fontsize=8,
+                # )
+                ax.set_xlim(min(x), 1.2*max(x))
+                ax.set_ylim(min(y), 1.5*max(y))
+                ymax = max(y)
+                xmax= x[y.index(ymax)]
+                text= "x={:.3f}, y={:.3f}".format(xmax, ymax)
+                if not ax:
+                    ax=plt.gca()
+                bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+                arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
+                kw = dict(xycoords='data',textcoords="axes fraction",
+                        arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
+                ax.annotate(text, xy=(xmax, ymax), xytext=(0.94,0.96), **kw)
+                ax.set_xlabel('$k_1$')
+                ax.set_ylabel(r'$\rho$')
+                ax.set_title(dataset_name)
+            fig.tight_layout()
+            for i in range(len(datasets), rows * cols):
+                fig.delaxes(axes.flatten()[i])
+            plt.suptitle(r'Stable rank ($\rho$) vs $k1$')
+            plt.subplots_adjust(top=0.85)
+            
+            if args.file_name is None:
+                plt.savefig(os.path.join(args.save_dir, 'all_in_one.png'))
+            else:
+                plt.savefig(os.path.join(args.save_dir, f'{args.file_name}.png'))
                 
 if __name__=="__main__":
     main()
