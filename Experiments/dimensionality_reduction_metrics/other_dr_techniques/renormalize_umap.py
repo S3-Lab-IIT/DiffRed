@@ -57,10 +57,11 @@ def main():
     else:
         settings=[args.settings[0] for i in range(len(target_dims))]
     
+    combinations =product(target_dims,settings)
     num_cores=cpu_count()
     pool=Pool(processes=num_cores)
 
-    results=[pool.apply_async(renormalize_embeddings, args=(args.dataset, args.embed_dir,target_dims[i], settings[i], args.save_dir, args.data_dir)) for i in range(len(target_dims))]
+    results=[pool.apply_async(renormalize_embeddings, args=(args.dataset, args.embed_dir,target_dim, setting, args.save_dir, args.data_dir)) for target_dim,setting in combinations]
 
     for result in results:
         result.wait()

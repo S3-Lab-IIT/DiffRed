@@ -1,7 +1,9 @@
 #!/bin/bash
-datasets="Bank Cifar10 FMnist Reuters30k geneRNASeq hatespeech"
+# datasets="Bank Cifar10 FMnist Reuters30k geneRNASeq hatespeech"
+datasets=$1
 
-algorithms="UMap T-SNE S-PCA K-PCA"
+# algorithms="UMap T-SNE S-PCA K-PCA"
+algorithms=$2
 
 # common_t_value="10 20 30 40 50"
 common_t_value="10 20 30 40"

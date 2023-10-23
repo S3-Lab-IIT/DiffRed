@@ -19,6 +19,26 @@ SETTINGS= {
                 "setting8":{'angular_rp_forest': False, 'init': 'random',  'min_dist': 0.001,  'n_neighbors': 5,  'spread': 1.0, 'random_state': 25 }
 
             },
+    "UMap2": {
+                "def": {"angular_rp_forest": False, "init": "spectral",  "min_dist": 0.001, "n_neighbors": 5, "spread": 1.0},
+
+                "setting1":{'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.001,  'n_neighbors': 6, 'spread': 1.0},
+
+                "setting2":{'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.001,  'n_neighbors': 7,  'spread': 1.0},
+
+                "setting3":{'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.001,  'n_neighbors': 8,  'spread': 1.0},
+
+                "setting4":{'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.001,  'n_neighbors': 4,  'spread': 1.0},
+
+                "setting5": {'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.001,  'n_neighbors': 3,  'spread': 1.0},
+
+                "setting6":{'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.0005,  'n_neighbors': 5,  'spread': 1.0},
+
+                "setting7": {'angular_rp_forest': False, 'init': 'spectral',  'min_dist': 0.002,  'n_neighbors': 5,  'spread': 1.0},
+
+                "setting8":{'angular_rp_forest': False, 'init': 'random',  'min_dist': 0.001,  'n_neighbors': 5,  'spread': 1.0, 'random_state': 25 }
+
+            },
     
     "T-SNE": {
                 "def": {'angle': 0.5, 'early_exaggeration': 12.0, 'init': 'random', 'learning_rate': 200.0, 'method': 'barnes_hut',  'min_grad_norm': 1e-07, 'n_components': 2, 'n_iter': 1000, 'n_iter_without_progress': 300,  'perplexity': 50.0},
