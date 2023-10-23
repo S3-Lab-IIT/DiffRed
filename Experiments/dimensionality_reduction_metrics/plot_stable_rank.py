@@ -94,11 +94,22 @@ def plot_stable_rank(dataset:str, SAVE_DIR:str, SING_DIR:str,file_name:str, clip
 
             for k1 in k1_vals:
                 stable_ranks.append(stable_rank(sigma[k1:]))
-    
     plt.plot(k1_vals, stable_ranks)
-    plt.xlabel('k1')
-    plt.ylabel('stable rank')
-    plt.title(f'Stable rank vs k1 for {dataset}')
+    plt.xlim(min(k1_vals), 1.2*max(k1_vals))
+    plt.ylim(min(stable_ranks), 1.5*max(stable_ranks))
+    ymax = max(stable_ranks)
+    xmax= k1_vals[stable_ranks.index(ymax)]
+    text= "x={:.3f}, y={:.3f}".format(xmax, ymax)
+    # if not ax:
+    #     ax=plt.gca()
+    bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+    arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
+    kw = dict(xycoords='data',textcoords="axes fraction",
+            arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
+    plt.annotate(text, xy=(xmax, ymax), xytext=(0.94,0.96), **kw)
+    plt.xlabel(r'$k_1$')
+    plt.ylabel('Stable rank')
+    plt.title(fr'Stable rank vs $k_1$ for {dataset}')
 
     if file_name is None:
         plt_name= f'{dataset}_clip={clip}.png' if not clip is None else f'{dataset}.png'
