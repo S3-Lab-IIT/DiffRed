@@ -27,7 +27,7 @@ for dataset in $datasets; do
             mkdir -p "${save_dir}${algorithm}"
         fi
         if [ ! $algorithm == "T-SNE" ]; then
-            if [ $dataset == "Bank " ]; then
+            if [ $dataset == "Bank" ]; then
                 python3 compute_stress.py --save_dir "${save_dir}${algorithm}" --embed_dir $embed_dir --file_name "stress_results_${algorithm}" --dataset $dataset --dr_tech $algorithm --setting all --target_dims $bank_t_value
             else
                 python3 compute_stress.py --save_dir "${save_dir}${algorithm}" --embed_dir $embed_dir --file_name "stress_results_${algorithm}" --dataset $dataset --dr_tech $algorithm --setting all --target_dims $common_t_value
