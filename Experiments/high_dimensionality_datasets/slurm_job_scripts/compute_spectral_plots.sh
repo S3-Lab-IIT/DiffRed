@@ -5,4 +5,4 @@
 
 # PASS THE DATASET NAME AS COMMAND LINE ARGUMENT
 
-python3 compute_spectral_plots.py -d $1
+python3 compute_spectral_plots.py -d $1 -e $2 --clip_at $3
