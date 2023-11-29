@@ -14,7 +14,8 @@ opt_k1["hatespeech"]="1 5 12 20"
 opt_k1["Reuters30k"]="0 2 2 4"
 
 
-embed_dir="./tsne_embeddings/"
+embed_dir=$1 # Default value for tsne, for tsne2, it is ./tsne2_embeddings/
+save_dir=$2 # Default value for tsne, for tsne2, it is ./results/m1_matched_stress_results/
 dist_dir="../../Experiments/dimensionality_reduction_metrics/norm_dist_matrices/"
 
 total_iterations=$(( ${#datasets[@]} * ${#algorithms[@]} ))
@@ -33,12 +34,12 @@ for dataset in $datasets; do
         # fi
         k1="${opt_k1[$dataset]}"
         if [ $dataset == "Cifar10" ] || [ $dataset == "FMnist" ]; then
-            python3 compute_stress.py -d $dataset --dist_dir $dist_dir --k1 $k1 --max_iter 100 --max_iter_list False --dr_tech $algorithm -t $common_t_value -u True 
+            python3 compute_stress.py -d $dataset --dist_dir $dist_dir --k1 $k1 --max_iter 100 --max_iter_list False --dr_tech $algorithm -t $common_t_value -u True --save_dir $2 --embed_dir $1
         
         elif [ $dataset == "Bank" ]; then
-            python3 compute_stress.py -d $dataset --dist_dir $dist_dir --k1 $k1 --max_iter 100 --max_iter_list False --dr_tech $algorithm -t $bank_t_value
+            python3 compute_stress.py -d $dataset --dist_dir $dist_dir --k1 $k1 --max_iter 100 --max_iter_list False --dr_tech $algorithm -t $bank_t_value --save_dir $2 --embed_dir $1
         else
-           python3 compute_stress.py -d $dataset --dist_dir $dist_dir --k1 $k1 --max_iter 100 --max_iter_list False --dr_tech $algorithm -t $common_t_value
+           python3 compute_stress.py -d $dataset --dist_dir $dist_dir --k1 $k1 --max_iter 100 --max_iter_list False --dr_tech $algorithm -t $common_t_value --save_dir $2 --embed_dir $1
         fi
 
         progress_percentage=$((progress_percentage+1))

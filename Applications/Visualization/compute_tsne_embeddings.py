@@ -38,7 +38,8 @@ def parse_arguments():
     args=parser.parse_args()
     return args
 
-def compute_embeddings(dataset:str, DATA_DIR:str,SAVE_DIR:str, dr_tech:str, target_dim:int, k1:int, k2:int, max_iter:int, setting:dict, tsne:str):
+
+def compute_embeddings(dataset:str, DATA_DIR:str,SAVE_DIR:str, dr_tech:str, target_dim:int, k1:int, k2:int, max_iter:int, setting:dict, tsne:str, scaling:bool):
 
     if dr_tech=='DiffRed':
         embed_path=os.path.join(DATA_DIR, dataset, f'{k1}_{k2}_{max_iter}.npy')
@@ -64,6 +65,7 @@ def compute_embeddings(dataset:str, DATA_DIR:str,SAVE_DIR:str, dr_tech:str, targ
             Z=DR_MAPS['M-TSNE'](X,SETTINGS['M-TSNE'][setting])
         else:
             print("Invalid tsne implementation")
+        
         np.save(os.path.join(SAVE_DIR, dr_tech,dataset, f'{dataset}_{target_dim}_{k1}_{k2}.npy'), Z)
     
     elif dr_tech=='PCA':
