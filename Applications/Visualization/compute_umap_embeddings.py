@@ -62,7 +62,7 @@ def compute_embeddings(dataset:str, DATA_DIR:str,SAVE_DIR:str, dr_tech:str, targ
             print(f'Embeddings already saved for dataset: {dataset}, dr_tech: {dr_tech}, target dimension: {target_dim}, setting: {setting}')
             return
         
-        Z=DR_MAPS['UMap'](X,SETTINGS['UMap'][setting])       
+        Z=DR_MAPS['UMap'](X,2,SETTINGS['UMap'][setting])       
         np.save(os.path.join(SAVE_DIR, dr_tech,dataset, f'{dataset}_{target_dim}_{k1}_{k2}.npy'), Z)
     
     elif dr_tech=='PCA':
@@ -86,7 +86,7 @@ def compute_embeddings(dataset:str, DATA_DIR:str,SAVE_DIR:str, dr_tech:str, targ
             return
         
         
-        Z=DR_MAPS['UMap'](X,SETTINGS['UMap'][setting])   
+        Z=DR_MAPS['UMap'](X,2,SETTINGS['UMap'][setting])   
 
         np.save(os.path.join(SAVE_DIR, dr_tech,dataset, f'{dataset}_{target_dim}.npy'), Z)
     
