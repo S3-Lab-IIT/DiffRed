@@ -12,15 +12,17 @@ opt_k1["geneRNASeq"]="5 8 10 10"
 opt_k1["hatespeech"]="1 5 12 20"
 opt_k1["Reuters30k"]="0 2 2 4"
 
-embed_dir='./tsne_embeddings/'
+# embed_dir='./tsne_embeddings/'
+embed_dir=$1
 pca_data_dir='../../Experiments/dimensionality_reduction_metrics/other_dr_techniques/pca_embeddings/'
 dr_data_dir='../../Experiments/dimensionality_reduction_metrics/embeddings/'
-save_dir='./tsne2_embeddings/'
+# save_dir='./tsne2_embeddings/'
+save_dir=$2
 max_iter='100'
 total_iterations=$(( ${#datasets[@]} * ${#algorithms[@]} ))
 
 update_progress_description() {
-    echo -ne "Computing Stress $1 $2..."
+    echo -ne "Renormalizing $1 $2..."
 }
 
 
