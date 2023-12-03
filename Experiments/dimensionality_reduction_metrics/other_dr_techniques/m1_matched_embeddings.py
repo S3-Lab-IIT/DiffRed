@@ -7,6 +7,7 @@
 # Reuters30k: python3 m1_matched_embeddings.py -d Reuters30k --dr_tech T-SNE -t 2 --settings setting4 
 # For Reuters30k, the directory name is M-TSNE
 
+
 import numpy as np
 import numpy.linalg as LA
 import math as m
