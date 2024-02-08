@@ -52,3 +52,5 @@ Applications/Visualization/umap2_embeddings/
 Applications/Autoencoder/results/Reuters30k/Reuters_new_DiffCoder.xlsx
 Experiments/dimensionality_reduction_metrics/monte_carlo_embeddings/
 Experiments/dimensionality_reduction_metrics/stable_rank_intuition.ipynb
+Experiments/dimensionality_reduction_metrics/synthetic_data_matrices/
+Experiments/dimensionality_reduction_metrics/stable_rank.ipynb
