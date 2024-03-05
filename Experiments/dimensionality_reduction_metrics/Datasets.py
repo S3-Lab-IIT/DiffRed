@@ -110,24 +110,6 @@ class Cifar10(Dataset):
     def preprocess(self):
         pass
         
-class Reuters100k(Dataset):
-    
-    global DATASET_DIR, CACHE_DIR
-
-    def __init__(self):
-        super().__init__('Reuters100k',None)
-    
-    def download(self):
-        nltk.download('reuters')
-    
-    def preprocess(self):
-        documents=reuters.fileids()
-        preprocessed_documents=[reuters.raw(doc_id) for doc_id in documents]
-        model = Word2Vec(preprocessed_documents, vector_size=100000, window=5, min_count=1, workers=32)
-        X = np.array([np.mean([model.wv[word] for word in doc], axis=0) for doc in preprocessed_documents])
-        label_binarizer=MultiLabelBinarizer()
-        y=label_binarizer.fit_transform([reuters.categories(doc_id) for doc_id in documents])
-        self.set_data(X,y)
 
 class Reuters30k(Dataset):
 
@@ -185,38 +167,6 @@ class geneRNASeq(Dataset):
         y=label_encoder.fit_transform(labels['Class'])
         self.set_data(X,y)
 
-class ElectricityLoadDiagrams(Dataset):
-
-    global DATASET_DIR,CACHE_DIR
-
-    def __init__(self,url):
-        super().__init__('ElectricityLoadDiagrams',url)
-    
-    def download(self):
-        self.cache_path=os.path.join(CACHE_DIR, self.name)
-        if not os.path.exists(self.cache_path):
-            os.mkdir(self.cache_path)
-        
-        parsed_url=urlparse(self.url)
-        file_name=os.path.basename(parsed_url.path)
-        self.zip_path=os.path.join(self.cache_path, file_name)
-
-        try:
-            urlretrieve(self.url, self.zip_path)
-        except urllib.error.URLError as e:
-            print("Failed to download the file ",e)
-    
-    def preprocess(self):
-        with zipfile.ZipFile(self.zip_path,'r') as zip_file:
-            zip_file.extract('LD2011_2014.txt',self.cache_path)
-        
-        os.remove(self.zip_path)
-
-        data=pd.read_csv(os.path.join(self.cache_path,'LD2011_2014.txt'),delimiter=';')
-
-        X=data.iloc[:,1:].values.T
-        y=None
-        self.set_data(X,y)
 
 
 class DIV2K(Dataset):
