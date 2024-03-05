@@ -1,4 +1,4 @@
-# DiffRed: Dimensionality Reduction guided by stable rank
+# <i>DiffRed</i>: Dimensionality Reduction guided by stable rank
 
 This is the official repository containing the code for the experiments of our AISTATS 2024 paper <b><i>DiffRed</i>: Dimensionality Reduction guided by stable rank</b> 
 <!-- This repo contains the python package for DiffRed implmentation as well as the code for all the experiments in the paper. 
