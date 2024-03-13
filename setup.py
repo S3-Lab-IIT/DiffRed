@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='diffred',
-    version='0.1.0',
+    version='0.1.1',
     packages=['DiffRed'],
     author='Prarabdh Shukla',
     author_email='prarabdh.10@gmail.com',
