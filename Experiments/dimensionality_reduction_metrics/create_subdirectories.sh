@@ -9,3 +9,6 @@ mkdir norm_singular_values
 mkdir norm_dist_matrices
 
 mkdir embeddings
+
+mkdir results
+
