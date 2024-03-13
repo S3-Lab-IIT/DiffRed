@@ -50,13 +50,12 @@ def main():
     url={
         'Bank':'https://archive.ics.uci.edu/static/public/222/bank+marketing.zip',
         'geneRNASeq': 'https://archive.ics.uci.edu/static/public/401/gene+expression+cancer+rna+seq.zip',
-        'ElectricityLoadDiagrams':'https://archive.ics.uci.ed/static/public/321/electricityloaddiagrams20112014.zip',
         'DIV2k': 'http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip',
         'hatespeech':{'X': 'https://mespadoto.github.io/proj-quant-eval/data/hatespeech/X.npy', 'y':'https://mespadoto.github.io/proj-quant-eval/data/hatespeech/y.npy'}
 
     }
 
-    objs={'bank':Bank(url['Bank']),'fmnist': FMNIST(), 'cifar10': Cifar10(),'reuters30k':Reuters30k(),'genernaseq':geneRNASeq(url['geneRNASeq']),'electricityloaddiagrams': ElectricityLoadDiagrams(url['ElectricityLoadDiagrams']),'div2k':DIV2K(url['DIV2k']), 'hatespeech':hatespeech('hatespeech',url['hatespeech'])}
+    objs={'bank':Bank(url['Bank']),'fmnist': FMNIST(), 'cifar10': Cifar10(),'reuters30k':Reuters30k(),'genernaseq':geneRNASeq(url['geneRNASeq']),'div2k':DIV2K(url['DIV2k']), 'hatespeech':hatespeech('hatespeech',url['hatespeech'])}
 
 
     create_datasets(objs, args.datasets)
