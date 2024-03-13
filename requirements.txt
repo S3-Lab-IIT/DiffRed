@@ -14,5 +14,5 @@ scikit_learn==1.3.0
 share_array_widmi==0.0.1
 tensorflow==2.14.0
 tqdm==4.66.1
-tsnecuda.egg==info
+tsnecuda==3.0.2
 umap_learn==0.5.3
