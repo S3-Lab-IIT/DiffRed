@@ -16,5 +16,6 @@ setup(
     project_urls={
         'Homepage': 'https://github.com/S3-Lab-IIT/DiffRed/tree/master'
     },
+    download_url='https://github.com/S3-Lab-IIT/DiffRed/archive/refs/tags/v0.1.0.tar.gz',
     install_requires=install_requires
 )
