@@ -37,6 +37,17 @@ pip install -r requirements.txt
 
 pip install -e .
 ```
+### Example Usage
+
+```python
+from DiffRed import DiffRed
+import numpy as np
+n=100
+D=50
+data=np.random.normal(size=(n,D))
+dr=DiffRed(k1=5,k2=5)
+embeddings=dr.fit_transform(data)
+```
 
 ## Using the parallel stress package
 Currently, the parallel stress implementation can only be used by installing from source.
